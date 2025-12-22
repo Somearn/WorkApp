@@ -9,4 +9,6 @@ This directory contains general documentation for the WorkApp hub.
 - Best practices
 - Architecture notes
 
-_Documentation will be added as the hub grows._
+## Module Documentation
+
+- [Network Tool](NetworkTool.md) - Network troubleshooting and system diagnostic utilities
