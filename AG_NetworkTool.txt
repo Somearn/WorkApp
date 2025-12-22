@@ -11,15 +11,18 @@
 # Features:
 # - List of network troubleshooting tools
 # - Launch tools on button click (right side content area)
-# - Tools: Continuous Ping, NSLookup, Tracert, Reboot Servers, Check services,
-#   Check Disk space, Check CPU/Memory/RAM usage, Cert check IIS, Cert check SQL,
-#   Uptime checker, Last Lockout, etc.
+# - Tools: Continuous Ping, NSLookup, Traceroute, Check Services,
+#   Check Disk Space, Check CPU/Memory/RAM Usage, IIS Certificate Check,
+#   Uptime Checker, Last Lockout
 
 $ErrorActionPreference = 'Stop'
 
 Add-Type -AssemblyName System.Windows.Forms | Out-Null
 Add-Type -AssemblyName System.Drawing       | Out-Null
 
+# NOTE: This Show-NetworkToolView function provides standalone entry point
+# for the module when used independently. When loaded via AG_MenuMain.txt,
+# the menu system calls Get-AG_NetworkToolPage directly instead.
 function Show-NetworkToolView {
     [CmdletBinding()]
     param(
