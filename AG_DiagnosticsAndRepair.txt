@@ -358,6 +358,9 @@ Write-Host 'Press any key to close...' -ForegroundColor Gray
     $lblRequestTitle.TextAlign = 'MiddleCenter'
     [void]$RequestTLP.Controls.Add($lblRequestTitle, 0, 0)
 
+    # Feature request placeholder text constant
+    $script:DR_RequestPlaceholder = "Enter feature requests here...`r`n`r`nExamples:`r`n- Add DNS flush tool`r`n- Add port scanner`r`n- Add bandwidth test"
+
     $txtRequest = New-Object System.Windows.Forms.TextBox
     $txtRequest.Multiline = $true
     $txtRequest.ScrollBars = 'Vertical'
@@ -366,7 +369,7 @@ Write-Host 'Press any key to close...' -ForegroundColor Gray
     $txtRequest.ForeColor = $script:DR_Theme.Text
     $txtRequest.BorderStyle = 'FixedSingle'
     $txtRequest.Dock = 'Fill'
-    $txtRequest.Text = "Enter feature requests here...`r`n`r`nExamples:`r`n- Add DNS flush tool`r`n- Add port scanner`r`n- Add bandwidth test"
+    $txtRequest.Text = $script:DR_RequestPlaceholder
     [void]$RequestTLP.Controls.Add($txtRequest, 0, 1)
 
     $btnSubmitRequest = New-Object System.Windows.Forms.Button
@@ -380,10 +383,10 @@ Write-Host 'Press any key to close...' -ForegroundColor Gray
     $btnSubmitRequest.FlatAppearance.BorderColor = $script:DR_Theme.Border
     $btnSubmitRequest.Add_Click({
         $request = $txtRequest.Text.Trim()
-        if (-not [string]::IsNullOrWhiteSpace($request) -and $request -ne "Enter feature requests here...`r`n`r`nExamples:`r`n- Add DNS flush tool`r`n- Add port scanner`r`n- Add bandwidth test") {
+        if (-not [string]::IsNullOrWhiteSpace($request) -and $request -ne $script:DR_RequestPlaceholder) {
             _MsgInfo "Feature request logged:`r`n`r`n$request`r`n`r`nThank you for your feedback!"
             & $script:DR_Status "Feature request submitted"
-            $txtRequest.Text = "Enter feature requests here...`r`n`r`nExamples:`r`n- Add DNS flush tool`r`n- Add port scanner`r`n- Add bandwidth test"
+            $txtRequest.Text = $script:DR_RequestPlaceholder
         } else {
             _MsgErr "Please enter a valid feature request."
         }
@@ -393,6 +396,7 @@ Write-Host 'Press any key to close...' -ForegroundColor Gray
     [void]$ContentSplit.Controls.Add($RequestPanel, 1, 0)
 
     # Define diagnostic tools with Star Trek-style color scheme
+    # Using here-strings for complex commands for better readability
     $tools = @(
         @{
             Name = 'PING DIAGNOSTIC'
@@ -421,19 +425,52 @@ Write-Host 'Press any key to close...' -ForegroundColor Gray
         @{
             Name = 'DISK SPACE'
             Color = $script:DR_Theme.BtnYellow
-            Command = 'if (''{TARGET}'' -eq ''localhost'') { Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used -ne $null } | Select-Object Name, @{n=''Used(GB)'';e={[math]::Round($_.Used/1GB,2)}}, @{n=''Free(GB)'';e={[math]::Round($_.Free/1GB,2)}}, @{n=''Total(GB)'';e={[math]::Round(($_.Used+$_.Free)/1GB,2)}} | Format-Table -AutoSize } else { Get-WmiObject Win32_LogicalDisk -ComputerName {TARGET} -Filter "DriveType=3" | Select-Object DeviceID, @{n=''Used(GB)'';e={[math]::Round(($_.Size-$_.FreeSpace)/1GB,2)}}, @{n=''Free(GB)'';e={[math]::Round($_.FreeSpace/1GB,2)}}, @{n=''Total(GB)'';e={[math]::Round($_.Size/1GB,2)}} | Format-Table -AutoSize }'
+            Command = @'
+if ('{TARGET}' -eq 'localhost') {
+    Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used -ne $null } | 
+        Select-Object Name, 
+            @{n='Used(GB)';e={[math]::Round($_.Used/1GB,2)}}, 
+            @{n='Free(GB)';e={[math]::Round($_.Free/1GB,2)}}, 
+            @{n='Total(GB)';e={[math]::Round(($_.Used+$_.Free)/1GB,2)}} | 
+        Format-Table -AutoSize
+} else {
+    Get-WmiObject Win32_LogicalDisk -ComputerName {TARGET} -Filter "DriveType=3" | 
+        Select-Object DeviceID, 
+            @{n='Used(GB)';e={[math]::Round(($_.Size-$_.FreeSpace)/1GB,2)}}, 
+            @{n='Free(GB)';e={[math]::Round($_.FreeSpace/1GB,2)}}, 
+            @{n='Total(GB)';e={[math]::Round($_.Size/1GB,2)}} | 
+        Format-Table -AutoSize
+}
+'@
             RequiresTarget = $true
         }
         @{
             Name = 'CPU & MEMORY'
             Color = $script:DR_Theme.BtnTeal
-            Command = '$cs = Get-WmiObject Win32_ComputerSystem -ComputerName {TARGET}; $os = Get-WmiObject Win32_OperatingSystem -ComputerName {TARGET}; $cpu = Get-WmiObject Win32_Processor -ComputerName {TARGET}; Write-Host "CPU: $($cpu.Name)"; Write-Host "Cores: $($cpu.NumberOfCores)"; Write-Host "Total RAM: $([math]::Round($cs.TotalPhysicalMemory/1GB,2)) GB"; Write-Host "Free RAM: $([math]::Round($os.FreePhysicalMemory/1MB/1024,2)) GB"; Write-Host "Uptime: $((Get-Date) - $os.ConvertToDateTime($os.LastBootUpTime))"'
+            Command = @'
+$cs = Get-WmiObject Win32_ComputerSystem -ComputerName {TARGET}
+$os = Get-WmiObject Win32_OperatingSystem -ComputerName {TARGET}
+$cpu = Get-WmiObject Win32_Processor -ComputerName {TARGET}
+Write-Host "CPU: $($cpu.Name)"
+Write-Host "Cores: $($cpu.NumberOfCores)"
+Write-Host "Total RAM: $([math]::Round($cs.TotalPhysicalMemory/1GB,2)) GB"
+Write-Host "Free RAM: $([math]::Round($os.FreePhysicalMemory/1MB/1024,2)) GB"
+Write-Host "Uptime: $((Get-Date) - $os.ConvertToDateTime($os.LastBootUpTime))"
+'@
             RequiresTarget = $true
         }
         @{
             Name = 'UPTIME CHECK'
             Color = $script:DR_Theme.BtnRed
-            Command = '$os = Get-WmiObject Win32_OperatingSystem -ComputerName {TARGET}; $lastBoot = $os.ConvertToDateTime($os.LastBootUpTime); $uptime = (Get-Date) - $lastBoot; Write-Host "Computer: {TARGET}"; Write-Host "OS: $($os.Caption)"; Write-Host "Last Boot: $($lastBoot.ToString(''yyyy-MM-dd HH:mm:ss''))"; Write-Host "Uptime: $($uptime.Days) days, $($uptime.Hours) hours, $($uptime.Minutes) minutes"'
+            Command = @'
+$os = Get-WmiObject Win32_OperatingSystem -ComputerName {TARGET}
+$lastBoot = $os.ConvertToDateTime($os.LastBootUpTime)
+$uptime = (Get-Date) - $lastBoot
+Write-Host "Computer: {TARGET}"
+Write-Host "OS: $($os.Caption)"
+Write-Host "Last Boot: $($lastBoot.ToString('yyyy-MM-dd HH:mm:ss'))"
+Write-Host "Uptime: $($uptime.Days) days, $($uptime.Hours) hours, $($uptime.Minutes) minutes"
+'@
             RequiresTarget = $true
         }
         @{
