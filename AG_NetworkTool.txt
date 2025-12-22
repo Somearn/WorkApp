@@ -1,0 +1,724 @@
+# AG_NetworkTool.txt
+# SomearnTK - Network Troubleshooting Tool
+#
+# Constraints:
+# - PowerShell 5.1, TXT-only execution
+# - No local file writes (read-only or launch external tools)
+# - No background jobs, timers, polling, or indefinite loops
+# - No network noise unless explicitly triggered by user button click
+# - WinForms, dark modern layout, fixed 1920x1080
+#
+# Features:
+# - List of network troubleshooting tools
+# - Launch tools on button click (right side content area)
+# - Tools: Continuous Ping, NSLookup, Tracert, Reboot Servers, Check services,
+#   Check Disk space, Check CPU/Memory/RAM usage, Cert check IIS, Cert check SQL,
+#   Uptime checker, Last Lockout, etc.
+
+$ErrorActionPreference = 'Stop'
+
+Add-Type -AssemblyName System.Windows.Forms | Out-Null
+Add-Type -AssemblyName System.Drawing       | Out-Null
+
+function Show-NetworkToolView {
+    [CmdletBinding()]
+    param(
+        [Parameter()][System.Windows.Forms.Control]$HostPanel,
+        [Parameter()][System.Windows.Forms.Control]$Parent,
+        [Parameter()][System.Windows.Forms.Control]$MainPanel
+    )
+
+    $target = $HostPanel
+    if (-not $target) { $target = $Parent }
+    if (-not $target) { $target = $MainPanel }
+
+    if (-not $target) {
+        [System.Windows.Forms.MessageBox]::Show("No host panel provided to embed the Network Tool view.","SomearnTK","OK","Error") | Out-Null
+        return
+    }
+
+    $setStatus = {
+        param([string]$t)
+        try { if ($script:AG_StatusLabel) { $script:AG_StatusLabel.Text = $t } } catch {}
+    }
+
+    try {
+        $target.SuspendLayout()
+        $target.Controls.Clear()
+
+        $page = Get-AG_NetworkToolPage -SetStatus $setStatus
+        $page.Dock = 'Fill'
+        [void]$target.Controls.Add($page)
+
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show($_.Exception.Message,'SomearnTK','OK','Error') | Out-Null
+    } finally {
+        try { $target.ResumeLayout() } catch {}
+    }
+}
+
+function Get-AG_NetworkToolPage {
+    [CmdletBinding()]
+    param(
+        [Parameter()][ScriptBlock]$SetStatus
+    )
+
+    function _MsgErr([string]$t)  { [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Error') | Out-Null }
+    function _MsgInfo([string]$t) { [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Information') | Out-Null }
+
+    # Persist status handler in script scope (safe for events)
+    $script:NT_SetStatus = $SetStatus
+    $script:NT_Status = {
+        param([string]$t)
+        if ($script:NT_SetStatus) {
+            try { & $script:NT_SetStatus $t } catch {}
+        }
+    }
+
+    # Theme colors (consistent with other modules)
+    $script:NT_Theme = @{
+        Form      = [System.Drawing.Color]::FromArgb(12, 14, 24)
+        Panel     = [System.Drawing.Color]::FromArgb(18, 20, 34)
+        Card      = [System.Drawing.Color]::FromArgb(24, 26, 46)
+        Border    = [System.Drawing.Color]::FromArgb(46, 50, 86)
+        Text      = [System.Drawing.Color]::FromArgb(230, 232, 246)
+        Muted     = [System.Drawing.Color]::FromArgb(160, 165, 198)
+        Accent    = [System.Drawing.Color]::FromArgb(160, 90, 255)
+        Btn       = [System.Drawing.Color]::FromArgb(85, 95, 235)
+        Btn2      = [System.Drawing.Color]::FromArgb(40, 42, 75)
+        Success   = [System.Drawing.Color]::FromArgb(80, 200, 120)
+        Warning   = [System.Drawing.Color]::FromArgb(255, 180, 0)
+    }
+
+    $fontTitle  = New-Object System.Drawing.Font('Segoe UI', 16, [System.Drawing.FontStyle]::Bold)
+    $fontBody   = New-Object System.Drawing.Font('Segoe UI', 10, [System.Drawing.FontStyle]::Regular)
+    $fontSmall  = New-Object System.Drawing.Font('Segoe UI', 9,  [System.Drawing.FontStyle]::Regular)
+    $fontMono   = New-Object System.Drawing.Font('Consolas', 9, [System.Drawing.FontStyle]::Regular)
+
+    function New-CardPanel { 
+        param([int]$Pad=12)
+        $p = New-Object System.Windows.Forms.Panel
+        $p.BackColor = $script:NT_Theme.Card
+        $p.Padding = New-Object System.Windows.Forms.Padding($Pad)
+        $p.Margin  = '0,0,0,0'
+        $p.Dock = 'Fill'
+        $p.BorderStyle = 'FixedSingle'
+        return $p
+    }
+
+    function New-ToolButton {
+        param(
+            [string]$Text,
+            [string]$Description
+        )
+
+        $b = New-Object System.Windows.Forms.Button
+        $b.Text = $Text
+        $b.Height = 50
+        $b.Width  = 220
+        $b.FlatStyle = 'Flat'
+        $b.FlatAppearance.BorderSize = 1
+        $b.FlatAppearance.BorderColor = $script:NT_Theme.Border
+        $b.BackColor = $script:NT_Theme.Btn2
+        $b.ForeColor = $script:NT_Theme.Text
+        $b.Font = New-Object System.Drawing.Font('Segoe UI', 10, [System.Drawing.FontStyle]::Bold)
+        $b.Margin = '8,8,8,8'
+        $b.TextAlign = 'MiddleLeft'
+        $b.Tag = $Description
+        return $b
+    }
+
+    # Root Panel -> TableLayoutPanel
+    $PageRoot = New-Object System.Windows.Forms.Panel
+    $PageRoot.Dock = 'Fill'
+    $PageRoot.BackColor = $script:NT_Theme.Form
+
+    $TLP = New-Object System.Windows.Forms.TableLayoutPanel
+    $TLP.Dock = 'Fill'
+    $TLP.BackColor = $script:NT_Theme.Form
+    $TLP.ColumnCount = 1
+    $TLP.RowCount = 2
+    $TLP.Padding = '14,12,14,12'
+    $TLP.RowStyles.Clear()
+    [void]$TLP.RowStyles.Add((New-Object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 56)))
+    [void]$TLP.RowStyles.Add((New-Object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 100)))
+    [void]$PageRoot.Controls.Add($TLP)
+
+    # Header row
+    $Header = New-Object System.Windows.Forms.Panel
+    $Header.Dock = 'Fill'
+    $Header.BackColor = $script:NT_Theme.Form
+
+    $lblTitle = New-Object System.Windows.Forms.Label
+    $lblTitle.Text = 'Network Troubleshooting Tools'
+    $lblTitle.Font = $fontTitle
+    $lblTitle.ForeColor = $script:NT_Theme.Text
+    $lblTitle.AutoSize = $true
+    $lblTitle.Location = New-Object System.Drawing.Point(0,10)
+
+    [void]$Header.Controls.Add($lblTitle)
+    [void]$TLP.Controls.Add($Header, 0, 0)
+
+    # Content area (split: left=tools list, right=output area)
+    $ContentHost = New-Object System.Windows.Forms.Panel
+    $ContentHost.Dock = 'Fill'
+    $ContentHost.BackColor = $script:NT_Theme.Form
+
+    $ContentSplitter = New-Object System.Windows.Forms.SplitContainer
+    $ContentSplitter.Dock = 'Fill'
+    $ContentSplitter.Orientation = 'Vertical'
+    $ContentSplitter.SplitterDistance = 280
+    $ContentSplitter.SplitterWidth = 2
+    $ContentSplitter.IsSplitterFixed = $false
+    $ContentSplitter.BackColor = $script:NT_Theme.Border
+    $ContentSplitter.Panel1.BackColor = $script:NT_Theme.Form
+    $ContentSplitter.Panel2.BackColor = $script:NT_Theme.Form
+
+    [void]$ContentHost.Controls.Add($ContentSplitter)
+    [void]$TLP.Controls.Add($ContentHost, 0, 1)
+
+    # LEFT PANEL: Tools list
+    $ToolsPanel = New-Object System.Windows.Forms.Panel
+    $ToolsPanel.Dock = 'Fill'
+    $ToolsPanel.BackColor = $script:NT_Theme.Panel
+    $ToolsPanel.Padding = '10,10,10,10'
+    $ToolsPanel.AutoScroll = $true
+
+    $ToolsFlow = New-Object System.Windows.Forms.FlowLayoutPanel
+    $ToolsFlow.Dock = 'Fill'
+    $ToolsFlow.FlowDirection = 'TopDown'
+    $ToolsFlow.WrapContents = $false
+    $ToolsFlow.AutoScroll = $true
+    $ToolsFlow.BackColor = $script:NT_Theme.Panel
+    $ToolsFlow.Padding = '4,4,4,4'
+
+    [void]$ToolsPanel.Controls.Add($ToolsFlow)
+    [void]$ContentSplitter.Panel1.Controls.Add($ToolsPanel)
+
+    # RIGHT PANEL: Output area
+    $OutputPanel = New-Object System.Windows.Forms.Panel
+    $OutputPanel.Dock = 'Fill'
+    $OutputPanel.BackColor = $script:NT_Theme.Form
+    $OutputPanel.Padding = '10,10,10,10'
+
+    $OutputCard = New-CardPanel -Pad 12
+    [void]$OutputPanel.Controls.Add($OutputCard)
+
+    $OutputTLP = New-Object System.Windows.Forms.TableLayoutPanel
+    $OutputTLP.Dock = 'Fill'
+    $OutputTLP.BackColor = $script:NT_Theme.Card
+    $OutputTLP.ColumnCount = 1
+    $OutputTLP.RowCount = 3
+    $OutputTLP.RowStyles.Clear()
+    [void]$OutputTLP.RowStyles.Add((New-Object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 40)))
+    [void]$OutputTLP.RowStyles.Add((New-Object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 100)))
+    [void]$OutputTLP.RowStyles.Add((New-Object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 50)))
+    [void]$OutputCard.Controls.Add($OutputTLP)
+
+    # Output title
+    $OutputTitle = New-Object System.Windows.Forms.Label
+    $OutputTitle.Text = 'Select a tool to begin'
+    $OutputTitle.Font = New-Object System.Drawing.Font('Segoe UI', 12, [System.Drawing.FontStyle]::Bold)
+    $OutputTitle.ForeColor = $script:NT_Theme.Accent
+    $OutputTitle.Dock = 'Fill'
+    $OutputTitle.TextAlign = 'MiddleLeft'
+    [void]$OutputTLP.Controls.Add($OutputTitle, 0, 0)
+
+    # Output text box
+    $OutputText = New-Object System.Windows.Forms.TextBox
+    $OutputText.Multiline = $true
+    $OutputText.ScrollBars = 'Both'
+    $OutputText.WordWrap = $false
+    $OutputText.ReadOnly = $true
+    $OutputText.Font = $fontMono
+    $OutputText.BackColor = $script:NT_Theme.Panel
+    $OutputText.ForeColor = $script:NT_Theme.Text
+    $OutputText.BorderStyle = 'None'
+    $OutputText.Dock = 'Fill'
+    $OutputText.Text = "Ready. Select a network troubleshooting tool from the left panel."
+    [void]$OutputTLP.Controls.Add($OutputText, 0, 1)
+
+    # Output action bar
+    $OutputActions = New-Object System.Windows.Forms.FlowLayoutPanel
+    $OutputActions.Dock = 'Fill'
+    $OutputActions.FlowDirection = 'LeftToRight'
+    $OutputActions.BackColor = $script:NT_Theme.Card
+    $OutputActions.Padding = '0,8,0,0'
+
+    $btnClear = New-Object System.Windows.Forms.Button
+    $btnClear.Text = 'Clear Output'
+    $btnClear.Height = 36
+    $btnClear.Width = 120
+    $btnClear.FlatStyle = 'Flat'
+    $btnClear.FlatAppearance.BorderSize = 1
+    $btnClear.FlatAppearance.BorderColor = $script:NT_Theme.Border
+    $btnClear.BackColor = $script:NT_Theme.Btn2
+    $btnClear.ForeColor = $script:NT_Theme.Text
+    $btnClear.Font = New-Object System.Drawing.Font('Segoe UI', 9, [System.Drawing.FontStyle]::Bold)
+    $btnClear.Add_Click({
+        $OutputText.Text = ""
+        & $script:NT_Status "Output cleared"
+    })
+    [void]$OutputActions.Controls.Add($btnClear)
+
+    [void]$OutputTLP.Controls.Add($OutputActions, 0, 2)
+    [void]$ContentSplitter.Panel2.Controls.Add($OutputPanel)
+
+    # Store references for tool actions
+    $script:NT_OutputText = $OutputText
+    $script:NT_OutputTitle = $OutputTitle
+
+    # Helper: Append output text
+    function Append-Output {
+        param([string]$Text)
+        if ($script:NT_OutputText) {
+            $script:NT_OutputText.AppendText($Text)
+            $script:NT_OutputText.SelectionStart = $script:NT_OutputText.Text.Length
+            $script:NT_OutputText.ScrollToCaret()
+        }
+    }
+
+    # Helper: Set output title
+    function Set-OutputTitle {
+        param([string]$Text)
+        if ($script:NT_OutputTitle) {
+            $script:NT_OutputTitle.Text = $Text
+        }
+    }
+
+    # Tool action handlers
+    function Invoke-ContinuousPing {
+        param([string]$Target)
+
+        if ([string]::IsNullOrWhiteSpace($Target)) {
+            $Target = [Microsoft.VisualBasic.Interaction]::InputBox("Enter hostname or IP address to ping:", "Continuous Ping", "8.8.8.8")
+            if ([string]::IsNullOrWhiteSpace($Target)) { return }
+        }
+
+        Set-OutputTitle "Continuous Ping: $Target"
+        $script:NT_OutputText.Text = ""
+        & $script:NT_Status "Starting continuous ping to $Target..."
+
+        Append-Output "Continuous Ping to $Target`r`n"
+        Append-Output ("=" * 60 + "`r`n`r`n")
+
+        try {
+            $count = 10
+            for ($i = 1; $i -le $count; $i++) {
+                $result = Test-Connection -ComputerName $Target -Count 1 -ErrorAction SilentlyContinue
+                if ($result) {
+                    $time = $result.ResponseTime
+                    Append-Output "[$i/$count] Reply from $Target : time=$($time)ms`r`n"
+                } else {
+                    Append-Output "[$i/$count] Request timed out.`r`n"
+                }
+                [System.Windows.Forms.Application]::DoEvents()
+            }
+            Append-Output "`r`nPing completed ($count requests sent).`r`n"
+            & $script:NT_Status "Continuous ping completed"
+        } catch {
+            Append-Output "`r`nError: $($_.Exception.Message)`r`n"
+            & $script:NT_Status "Ping failed"
+        }
+    }
+
+    function Invoke-NSLookup {
+        param([string]$Target)
+
+        if ([string]::IsNullOrWhiteSpace($Target)) {
+            $Target = [Microsoft.VisualBasic.Interaction]::InputBox("Enter hostname or IP address:", "NSLookup", "google.com")
+            if ([string]::IsNullOrWhiteSpace($Target)) { return }
+        }
+
+        Set-OutputTitle "NSLookup: $Target"
+        $script:NT_OutputText.Text = ""
+        & $script:NT_Status "Performing NSLookup for $Target..."
+
+        Append-Output "NSLookup for $Target`r`n"
+        Append-Output ("=" * 60 + "`r`n`r`n")
+
+        try {
+            $result = Resolve-DnsName -Name $Target -ErrorAction Stop
+            foreach ($record in $result) {
+                Append-Output "Name: $($record.Name)`r`n"
+                if ($record.IPAddress) {
+                    Append-Output "Address: $($record.IPAddress)`r`n"
+                }
+                if ($record.Type) {
+                    Append-Output "Type: $($record.Type)`r`n"
+                }
+                Append-Output "`r`n"
+            }
+            & $script:NT_Status "NSLookup completed"
+        } catch {
+            Append-Output "Error: $($_.Exception.Message)`r`n"
+            & $script:NT_Status "NSLookup failed"
+        }
+    }
+
+    function Invoke-Tracert {
+        param([string]$Target)
+
+        if ([string]::IsNullOrWhiteSpace($Target)) {
+            $Target = [Microsoft.VisualBasic.Interaction]::InputBox("Enter hostname or IP address:", "Traceroute", "8.8.8.8")
+            if ([string]::IsNullOrWhiteSpace($Target)) { return }
+        }
+
+        Set-OutputTitle "Traceroute: $Target"
+        $script:NT_OutputText.Text = ""
+        & $script:NT_Status "Performing traceroute to $Target..."
+
+        Append-Output "Traceroute to $Target`r`n"
+        Append-Output ("=" * 60 + "`r`n`r`n")
+
+        try {
+            $result = Test-NetConnection -ComputerName $Target -TraceRoute -ErrorAction Stop
+            Append-Output "Computer: $($result.ComputerName)`r`n"
+            Append-Output "Remote Address: $($result.RemoteAddress)`r`n"
+            Append-Output "Ping Success: $($result.PingSucceeded)`r`n`r`n"
+            
+            if ($result.TraceRoute) {
+                Append-Output "Trace Route:`r`n"
+                $hop = 1
+                foreach ($route in $result.TraceRoute) {
+                    Append-Output "  $hop. $route`r`n"
+                    $hop++
+                }
+            }
+            & $script:NT_Status "Traceroute completed"
+        } catch {
+            Append-Output "Error: $($_.Exception.Message)`r`n"
+            & $script:NT_Status "Traceroute failed"
+        }
+    }
+
+    function Invoke-CheckServices {
+        param([string]$ComputerName)
+
+        if ([string]::IsNullOrWhiteSpace($ComputerName)) {
+            $ComputerName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter computer name (leave blank for local):", "Check Services", "localhost")
+            if ([string]::IsNullOrWhiteSpace($ComputerName)) { $ComputerName = "localhost" }
+        }
+
+        Set-OutputTitle "Services: $ComputerName"
+        $script:NT_OutputText.Text = ""
+        & $script:NT_Status "Checking services on $ComputerName..."
+
+        Append-Output "Services Status on $ComputerName`r`n"
+        Append-Output ("=" * 60 + "`r`n`r`n")
+
+        try {
+            $services = Get-Service -ComputerName $ComputerName -ErrorAction Stop | 
+                        Where-Object { $_.StartType -ne 'Disabled' } |
+                        Sort-Object Status, Name
+            
+            $running = ($services | Where-Object { $_.Status -eq 'Running' }).Count
+            $stopped = ($services | Where-Object { $_.Status -eq 'Stopped' }).Count
+            
+            Append-Output "Summary: $running Running, $stopped Stopped`r`n`r`n"
+            
+            foreach ($svc in $services | Select-Object -First 50) {
+                $status = $svc.Status.ToString().PadRight(10)
+                $name = $svc.Name.PadRight(40)
+                Append-Output "$status $name $($svc.DisplayName)`r`n"
+            }
+            
+            if ($services.Count -gt 50) {
+                Append-Output "`r`n... (showing first 50 of $($services.Count) services)`r`n"
+            }
+            
+            & $script:NT_Status "Services check completed"
+        } catch {
+            Append-Output "Error: $($_.Exception.Message)`r`n"
+            & $script:NT_Status "Services check failed"
+        }
+    }
+
+    function Invoke-CheckDiskSpace {
+        param([string]$ComputerName)
+
+        if ([string]::IsNullOrWhiteSpace($ComputerName)) {
+            $ComputerName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter computer name (leave blank for local):", "Check Disk Space", "localhost")
+            if ([string]::IsNullOrWhiteSpace($ComputerName)) { $ComputerName = "localhost" }
+        }
+
+        Set-OutputTitle "Disk Space: $ComputerName"
+        $script:NT_OutputText.Text = ""
+        & $script:NT_Status "Checking disk space on $ComputerName..."
+
+        Append-Output "Disk Space on $ComputerName`r`n"
+        Append-Output ("=" * 60 + "`r`n`r`n")
+
+        try {
+            if ($ComputerName -eq "localhost" -or $ComputerName -eq $env:COMPUTERNAME) {
+                $disks = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used -ne $null }
+            } else {
+                $disks = Get-WmiObject -Class Win32_LogicalDisk -ComputerName $ComputerName -Filter "DriveType=3" -ErrorAction Stop
+            }
+
+            foreach ($disk in $disks) {
+                if ($disk.Used -ne $null) {
+                    # PSDrive format
+                    $name = $disk.Name
+                    $used = [math]::Round($disk.Used / 1GB, 2)
+                    $free = [math]::Round($disk.Free / 1GB, 2)
+                    $total = $used + $free
+                    $pct = [math]::Round(($used / $total) * 100, 1)
+                } else {
+                    # WMI format
+                    $name = $disk.DeviceID
+                    $total = [math]::Round($disk.Size / 1GB, 2)
+                    $free = [math]::Round($disk.FreeSpace / 1GB, 2)
+                    $used = $total - $free
+                    $pct = [math]::Round(($used / $total) * 100, 1)
+                }
+                
+                Append-Output "Drive $name :`r`n"
+                Append-Output "  Total: $total GB`r`n"
+                Append-Output "  Used:  $used GB ($pct%)`r`n"
+                Append-Output "  Free:  $free GB`r`n`r`n"
+            }
+            
+            & $script:NT_Status "Disk space check completed"
+        } catch {
+            Append-Output "Error: $($_.Exception.Message)`r`n"
+            & $script:NT_Status "Disk space check failed"
+        }
+    }
+
+    function Invoke-CheckCPUMemory {
+        param([string]$ComputerName)
+
+        if ([string]::IsNullOrWhiteSpace($ComputerName)) {
+            $ComputerName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter computer name (leave blank for local):", "Check CPU/Memory", "localhost")
+            if ([string]::IsNullOrWhiteSpace($ComputerName)) { $ComputerName = "localhost" }
+        }
+
+        Set-OutputTitle "CPU/Memory: $ComputerName"
+        $script:NT_OutputText.Text = ""
+        & $script:NT_Status "Checking CPU/Memory on $ComputerName..."
+
+        Append-Output "CPU/Memory Status on $ComputerName`r`n"
+        Append-Output ("=" * 60 + "`r`n`r`n")
+
+        try {
+            if ($ComputerName -eq "localhost" -or $ComputerName -eq $env:COMPUTERNAME) {
+                $cs = Get-WmiObject -Class Win32_ComputerSystem
+                $os = Get-WmiObject -Class Win32_OperatingSystem
+                $cpu = Get-WmiObject -Class Win32_Processor
+            } else {
+                $cs = Get-WmiObject -Class Win32_ComputerSystem -ComputerName $ComputerName -ErrorAction Stop
+                $os = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $ComputerName -ErrorAction Stop
+                $cpu = Get-WmiObject -Class Win32_Processor -ComputerName $ComputerName -ErrorAction Stop
+            }
+
+            Append-Output "Computer: $($cs.Name)`r`n`r`n"
+            
+            Append-Output "CPU Information:`r`n"
+            Append-Output "  Name: $($cpu.Name)`r`n"
+            Append-Output "  Cores: $($cpu.NumberOfCores)`r`n"
+            Append-Output "  Logical Processors: $($cpu.NumberOfLogicalProcessors)`r`n`r`n"
+            
+            $totalRAM = [math]::Round($cs.TotalPhysicalMemory / 1GB, 2)
+            $freeRAM = [math]::Round($os.FreePhysicalMemory / 1MB / 1024, 2)
+            $usedRAM = $totalRAM - $freeRAM
+            $ramPct = [math]::Round(($usedRAM / $totalRAM) * 100, 1)
+            
+            Append-Output "Memory Information:`r`n"
+            Append-Output "  Total RAM: $totalRAM GB`r`n"
+            Append-Output "  Used RAM:  $usedRAM GB ($ramPct%)`r`n"
+            Append-Output "  Free RAM:  $freeRAM GB`r`n`r`n"
+            
+            $uptime = (Get-Date) - $os.ConvertToDateTime($os.LastBootUpTime)
+            Append-Output "Uptime: $($uptime.Days) days, $($uptime.Hours) hours, $($uptime.Minutes) minutes`r`n"
+            
+            & $script:NT_Status "CPU/Memory check completed"
+        } catch {
+            Append-Output "Error: $($_.Exception.Message)`r`n"
+            & $script:NT_Status "CPU/Memory check failed"
+        }
+    }
+
+    function Invoke-UptimeChecker {
+        param([string]$ComputerName)
+
+        if ([string]::IsNullOrWhiteSpace($ComputerName)) {
+            $ComputerName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter computer name (leave blank for local):", "Uptime Checker", "localhost")
+            if ([string]::IsNullOrWhiteSpace($ComputerName)) { $ComputerName = "localhost" }
+        }
+
+        Set-OutputTitle "Uptime: $ComputerName"
+        $script:NT_OutputText.Text = ""
+        & $script:NT_Status "Checking uptime on $ComputerName..."
+
+        Append-Output "Uptime Check for $ComputerName`r`n"
+        Append-Output ("=" * 60 + "`r`n`r`n")
+
+        try {
+            if ($ComputerName -eq "localhost" -or $ComputerName -eq $env:COMPUTERNAME) {
+                $os = Get-WmiObject -Class Win32_OperatingSystem
+            } else {
+                $os = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $ComputerName -ErrorAction Stop
+            }
+
+            $lastBoot = $os.ConvertToDateTime($os.LastBootUpTime)
+            $uptime = (Get-Date) - $lastBoot
+            
+            Append-Output "Computer: $ComputerName`r`n"
+            Append-Output "OS: $($os.Caption)`r`n"
+            Append-Output "Last Boot: $($lastBoot.ToString('yyyy-MM-dd HH:mm:ss'))`r`n`r`n"
+            Append-Output "Uptime:`r`n"
+            Append-Output "  Days:    $($uptime.Days)`r`n"
+            Append-Output "  Hours:   $($uptime.Hours)`r`n"
+            Append-Output "  Minutes: $($uptime.Minutes)`r`n"
+            Append-Output "  Total Hours: $([math]::Round($uptime.TotalHours, 2))`r`n"
+            
+            & $script:NT_Status "Uptime check completed"
+        } catch {
+            Append-Output "Error: $($_.Exception.Message)`r`n"
+            & $script:NT_Status "Uptime check failed"
+        }
+    }
+
+    function Invoke-CertCheckIIS {
+        param([string]$ComputerName)
+
+        if ([string]::IsNullOrWhiteSpace($ComputerName)) {
+            $ComputerName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter IIS server name (leave blank for local):", "IIS Certificate Check", "localhost")
+            if ([string]::IsNullOrWhiteSpace($ComputerName)) { $ComputerName = "localhost" }
+        }
+
+        Set-OutputTitle "IIS Certificates: $ComputerName"
+        $script:NT_OutputText.Text = ""
+        & $script:NT_Status "Checking IIS certificates on $ComputerName..."
+
+        Append-Output "IIS Certificate Check on $ComputerName`r`n"
+        Append-Output ("=" * 60 + "`r`n`r`n")
+
+        try {
+            # Get certificates from local machine personal store
+            $certs = Get-ChildItem -Path Cert:\LocalMachine\My -ErrorAction Stop | 
+                     Where-Object { $_.HasPrivateKey -eq $true } |
+                     Sort-Object NotAfter
+
+            if ($certs.Count -eq 0) {
+                Append-Output "No certificates found in Local Machine Personal store.`r`n"
+            } else {
+                Append-Output "Found $($certs.Count) certificate(s) with private keys:`r`n`r`n"
+                
+                foreach ($cert in $certs) {
+                    $daysUntilExpiry = ($cert.NotAfter - (Get-Date)).Days
+                    $status = if ($daysUntilExpiry -lt 0) { "EXPIRED" } 
+                              elseif ($daysUntilExpiry -lt 30) { "EXPIRING SOON" }
+                              else { "Valid" }
+                    
+                    Append-Output "Subject: $($cert.Subject)`r`n"
+                    Append-Output "Issuer: $($cert.Issuer)`r`n"
+                    Append-Output "Thumbprint: $($cert.Thumbprint)`r`n"
+                    Append-Output "Valid From: $($cert.NotBefore.ToString('yyyy-MM-dd'))`r`n"
+                    Append-Output "Valid Until: $($cert.NotAfter.ToString('yyyy-MM-dd'))`r`n"
+                    Append-Output "Days Until Expiry: $daysUntilExpiry ($status)`r`n`r`n"
+                }
+            }
+            
+            & $script:NT_Status "IIS certificate check completed"
+        } catch {
+            Append-Output "Error: $($_.Exception.Message)`r`n"
+            Append-Output "`r`nNote: This check requires appropriate permissions.`r`n"
+            & $script:NT_Status "IIS certificate check failed"
+        }
+    }
+
+    function Invoke-LastLockout {
+        param([string]$UserName)
+
+        if ([string]::IsNullOrWhiteSpace($UserName)) {
+            $UserName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter username to check for lockouts:", "Last Lockout", $env:USERNAME)
+            if ([string]::IsNullOrWhiteSpace($UserName)) { return }
+        }
+
+        Set-OutputTitle "Last Lockout: $UserName"
+        $script:NT_OutputText.Text = ""
+        & $script:NT_Status "Checking lockout status for $UserName..."
+
+        Append-Output "Account Lockout Check for $UserName`r`n"
+        Append-Output ("=" * 60 + "`r`n`r`n")
+
+        try {
+            # Try to get AD user info (requires AD module)
+            if (Get-Module -ListAvailable -Name ActiveDirectory) {
+                Import-Module ActiveDirectory -ErrorAction Stop
+                $user = Get-ADUser -Identity $UserName -Properties LockedOut, LockoutTime, BadLogonCount, LastBadPasswordAttempt -ErrorAction Stop
+                
+                Append-Output "User: $($user.SamAccountName)`r`n"
+                Append-Output "Display Name: $($user.Name)`r`n"
+                Append-Output "Locked Out: $($user.LockedOut)`r`n"
+                
+                if ($user.LockoutTime) {
+                    Append-Output "Lockout Time: $($user.LockoutTime)`r`n"
+                }
+                if ($user.LastBadPasswordAttempt) {
+                    Append-Output "Last Bad Password: $($user.LastBadPasswordAttempt)`r`n"
+                }
+                Append-Output "Bad Logon Count: $($user.BadLogonCount)`r`n"
+            } else {
+                Append-Output "ActiveDirectory module not available.`r`n"
+                Append-Output "Checking local account status...`r`n`r`n"
+                
+                $user = Get-LocalUser -Name $UserName -ErrorAction Stop
+                Append-Output "User: $($user.Name)`r`n"
+                Append-Output "Enabled: $($user.Enabled)`r`n"
+                Append-Output "Last Logon: $($user.LastLogon)`r`n"
+            }
+            
+            & $script:NT_Status "Lockout check completed"
+        } catch {
+            Append-Output "Error: $($_.Exception.Message)`r`n"
+            Append-Output "`r`nNote: This check may require Active Directory module or appropriate permissions.`r`n"
+            & $script:NT_Status "Lockout check failed"
+        }
+    }
+
+    # Add Visual Basic assembly for InputBox
+    Add-Type -AssemblyName Microsoft.VisualBasic
+
+    # Define all tools
+    $tools = @(
+        @{ Name = "Continuous Ping"; Description = "Ping a host continuously (10 pings)"; Action = { Invoke-ContinuousPing } }
+        @{ Name = "NSLookup"; Description = "DNS lookup for a hostname or IP"; Action = { Invoke-NSLookup } }
+        @{ Name = "Traceroute"; Description = "Trace network path to destination"; Action = { Invoke-Tracert } }
+        @{ Name = "Check Services"; Description = "View running services on a computer"; Action = { Invoke-CheckServices } }
+        @{ Name = "Check Disk Space"; Description = "View disk space usage"; Action = { Invoke-CheckDiskSpace } }
+        @{ Name = "Check CPU/Memory"; Description = "View CPU and memory usage"; Action = { Invoke-CheckCPUMemory } }
+        @{ Name = "Uptime Checker"; Description = "Check system uptime"; Action = { Invoke-UptimeChecker } }
+        @{ Name = "IIS Certificate Check"; Description = "Check IIS SSL certificates"; Action = { Invoke-CertCheckIIS } }
+        @{ Name = "Last Lockout"; Description = "Check user account lockout status"; Action = { Invoke-LastLockout } }
+    )
+
+    # Create buttons for each tool
+    foreach ($tool in $tools) {
+        $btn = New-ToolButton -Text $tool.Name -Description $tool.Description
+        $btn.Tag = $tool
+        $btn.Add_Click({
+            $toolData = $this.Tag
+            & $script:NT_Status "Launching: $($toolData.Name)..."
+            try {
+                & $toolData.Action
+            } catch {
+                _MsgErr "Error running tool: $($_.Exception.Message)"
+                & $script:NT_Status "Tool failed"
+            }
+        })
+        
+        # Tooltip
+        $tooltip = New-Object System.Windows.Forms.ToolTip
+        $tooltip.SetToolTip($btn, $tool.Description)
+        
+        [void]$ToolsFlow.Controls.Add($btn)
+    }
+
+    # Initial status
+    & $script:NT_Status "Network Tool loaded - select a tool from the left panel"
+
+    return $PageRoot
+}

@@ -291,6 +291,70 @@ function Show-ScriptLauncherView {
     }
 }
 
+# MENU LINK: Network Tool (Menu Button 5)
+function Show-NetworkToolView {
+    [CmdletBinding()]
+    param(
+        [Parameter()][System.Windows.Forms.Panel]$HostPanel
+    )
+
+    function _MsgErr([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Error') | Out-Null }
+
+    try {
+        if (-not $HostPanel) { throw "Host panel not available." }
+
+        if (-not (Get-Command -Name 'Get-AG_NetworkToolPage' -ErrorAction SilentlyContinue)) {
+
+            $candidates = New-Object System.Collections.Generic.List[string]
+
+            if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
+                $candidates.Add((Join-Path $script:AgScriptsFolder 'AG_NetworkTool.txt')) | Out-Null
+            }
+
+            if ($script:AG_LaunchPath -and -not [string]::IsNullOrWhiteSpace($script:AG_LaunchPath)) {
+                $launcherDir = Split-Path -Parent $script:AG_LaunchPath
+                $candidates.Add((Join-Path $launcherDir 'AG_NetworkTool.txt')) | Out-Null
+            }
+
+            if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
+                $root = Split-Path -Parent $script:AgScriptsFolder
+                $candidates.Add((Join-Path $root 'appscripts\AG_NetworkTool.txt')) | Out-Null
+            }
+
+            foreach ($p in ($candidates | Select-Object -Unique)) {
+                if ($p -and (Test-Path -LiteralPath $p)) {
+                    $code = Get-Content -LiteralPath $p -Raw
+                    . ([scriptblock]::Create($code))
+                    break
+                }
+            }
+        }
+
+        if (-not (Get-Command -Name 'Get-AG_NetworkToolPage' -ErrorAction SilentlyContinue)) {
+            throw "Network Tool module not loaded. Missing function: Get-AG_NetworkToolPage"
+        }
+
+        $HostPanel.SuspendLayout()
+        $HostPanel.Controls.Clear()
+
+        $page = Get-AG_NetworkToolPage -SetStatus {
+            param($t)
+            if ($script:AG_StatusLabel) { $script:AG_StatusLabel.Text = $t }
+        }
+
+        $page.Dock = 'Fill'
+        [void]$HostPanel.Controls.Add($page)
+
+        if ($script:AG_StatusLabel) { $script:AG_StatusLabel.Text = 'Opened: Network Tool' }
+
+    } catch {
+        _MsgErr $_.Exception.Message
+        if ($script:AG_StatusLabel) { $script:AG_StatusLabel.Text = 'Network Tool failed to open.' }
+    } finally {
+        try { $HostPanel.ResumeLayout() } catch {}
+    }
+}
+
 function Show-MenuMain {
 
     if ($script:AG_MainForm -and -not $script:AG_MainForm.IsDisposed) {
@@ -417,8 +481,9 @@ function Show-MenuMain {
     $left.Controls.Add((New-MenuButton 'Phone Book' $y 'Show-PhoneBookDirectoryView')); $y += 40
     $left.Controls.Add((New-MenuButton 'Site Manager' $y 'Show-SiteManagerView')); $y += 40
     $left.Controls.Add((New-MenuButton 'Script Launcher' $y 'Show-ScriptLauncherView')); $y += 40
+    $left.Controls.Add((New-MenuButton 'Network Tool' $y 'Show-NetworkToolView')); $y += 40
 
-    for ($i=5; $i -le 15; $i++) {
+    for ($i=6; $i -le 15; $i++) {
         $left.Controls.Add((New-MenuButton "Item $i" $y '__NOTIMPL__'))
         $y += 40
     }
