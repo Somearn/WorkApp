@@ -1,0 +1,4 @@
+$script:AgScriptsFolder = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appdata'
+. ([scriptblock]::Create(
+    (Get-Content -LiteralPath (Join-Path $script:AgScriptsFolder 'RunMenu.txt') -Raw)
+))
