@@ -4,9 +4,8 @@ This directory contains all applications and projects in the WorkApp hub.
 
 ## Available Apps
 
-This section will be updated as new applications are added.
-
-_Currently, no apps have been added yet. Check back soon!_
+### [example-app](./example-app/)
+A template application demonstrating the structure and organization for apps in this hub. Use this as a reference when adding your own applications.
 
 ## Adding Your App
 
