@@ -12,11 +12,11 @@ The root directory also contains PowerShell-based modules (stored as `.txt` file
 
 ```
 WorkApp/
-├── apps/               # All applications and projects
-├── docs/               # Documentation
-├── AG_*.txt            # SomearnTK application modules
-├── RunMenu.txt         # Main launcher
-└── README.md           # This file
+├── apps/                        # All applications and projects
+├── docs/                        # Documentation
+├── AG_*.txt                     # SomearnTK application modules
+├── RunMenu.txt                  # Main launcher
+└── README.md                    # This file
 ```
 
 ## SomearnTK Modules
@@ -27,9 +27,9 @@ The following modules are available in the main menu:
 - **Phone Book** - Contact directory viewer
 - **Site Manager** - Site information management
 - **Script Launcher** - Execute PowerShell scripts
-- **Network Tool** - Network troubleshooting and system diagnostics
+- **Diagnostics & Repair** - Star Trek-themed network diagnostics and system tools
 
-See [docs/NetworkTool.md](docs/NetworkTool.md) for detailed documentation on the Network Tool module.
+See [docs/DiagnosticsAndRepair.md](docs/DiagnosticsAndRepair.md) for detailed documentation on the Diagnostics and Repair module.
 
 ## Getting Started
 

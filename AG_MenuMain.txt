@@ -291,8 +291,8 @@ function Show-ScriptLauncherView {
     }
 }
 
-# MENU LINK: Network Tool (Menu Button 5)
-function Show-NetworkToolView {
+# MENU LINK: Diagnostics and Repair (Menu Button 5)
+function Show-DiagnosticsAndRepairView {
     [CmdletBinding()]
     param(
         [Parameter()][System.Windows.Forms.Panel]$HostPanel
@@ -303,22 +303,22 @@ function Show-NetworkToolView {
     try {
         if (-not $HostPanel) { throw "Host panel not available." }
 
-        if (-not (Get-Command -Name 'Get-AG_NetworkToolPage' -ErrorAction SilentlyContinue)) {
+        if (-not (Get-Command -Name 'Get-AG_DiagnosticsAndRepairPage' -ErrorAction SilentlyContinue)) {
 
             $candidates = New-Object System.Collections.Generic.List[string]
 
             if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
-                $candidates.Add((Join-Path $script:AgScriptsFolder 'AG_NetworkTool.txt')) | Out-Null
+                $candidates.Add((Join-Path $script:AgScriptsFolder 'AG_DiagnosticsAndRepair.txt')) | Out-Null
             }
 
             if ($script:AG_LaunchPath -and -not [string]::IsNullOrWhiteSpace($script:AG_LaunchPath)) {
                 $launcherDir = Split-Path -Parent $script:AG_LaunchPath
-                $candidates.Add((Join-Path $launcherDir 'AG_NetworkTool.txt')) | Out-Null
+                $candidates.Add((Join-Path $launcherDir 'AG_DiagnosticsAndRepair.txt')) | Out-Null
             }
 
             if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
                 $root = Split-Path -Parent $script:AgScriptsFolder
-                $candidates.Add((Join-Path $root 'appscripts\AG_NetworkTool.txt')) | Out-Null
+                $candidates.Add((Join-Path $root 'appscripts\AG_DiagnosticsAndRepair.txt')) | Out-Null
             }
 
             foreach ($p in ($candidates | Select-Object -Unique)) {
@@ -330,14 +330,14 @@ function Show-NetworkToolView {
             }
         }
 
-        if (-not (Get-Command -Name 'Get-AG_NetworkToolPage' -ErrorAction SilentlyContinue)) {
-            throw "Network Tool module not loaded. Missing function: Get-AG_NetworkToolPage"
+        if (-not (Get-Command -Name 'Get-AG_DiagnosticsAndRepairPage' -ErrorAction SilentlyContinue)) {
+            throw "Diagnostics and Repair module not loaded. Missing function: Get-AG_DiagnosticsAndRepairPage"
         }
 
         $HostPanel.SuspendLayout()
         $HostPanel.Controls.Clear()
 
-        $page = Get-AG_NetworkToolPage -SetStatus {
+        $page = Get-AG_DiagnosticsAndRepairPage -SetStatus {
             param($t)
             if ($script:AG_StatusLabel) { $script:AG_StatusLabel.Text = $t }
         }
@@ -345,11 +345,11 @@ function Show-NetworkToolView {
         $page.Dock = 'Fill'
         [void]$HostPanel.Controls.Add($page)
 
-        if ($script:AG_StatusLabel) { $script:AG_StatusLabel.Text = 'Opened: Network Tool' }
+        if ($script:AG_StatusLabel) { $script:AG_StatusLabel.Text = 'Opened: Diagnostics and Repair' }
 
     } catch {
         _MsgErr $_.Exception.Message
-        if ($script:AG_StatusLabel) { $script:AG_StatusLabel.Text = 'Network Tool failed to open.' }
+        if ($script:AG_StatusLabel) { $script:AG_StatusLabel.Text = 'Diagnostics and Repair failed to open.' }
     } finally {
         try { $HostPanel.ResumeLayout() } catch {}
     }
@@ -481,7 +481,7 @@ function Show-MenuMain {
     $left.Controls.Add((New-MenuButton 'Phone Book' $y 'Show-PhoneBookDirectoryView')); $y += 40
     $left.Controls.Add((New-MenuButton 'Site Manager' $y 'Show-SiteManagerView')); $y += 40
     $left.Controls.Add((New-MenuButton 'Script Launcher' $y 'Show-ScriptLauncherView')); $y += 40
-    $left.Controls.Add((New-MenuButton 'Network Tool' $y 'Show-NetworkToolView')); $y += 40
+    $left.Controls.Add((New-MenuButton 'Diagnostics & Repair' $y 'Show-DiagnosticsAndRepairView')); $y += 40
 
     for ($i=6; $i -le 15; $i++) {
         $left.Controls.Add((New-MenuButton "Item $i" $y '__NOTIMPL__'))

@@ -11,4 +11,4 @@ This directory contains general documentation for the WorkApp hub.
 
 ## Module Documentation
 
-- [Network Tool](NetworkTool.md) - Network troubleshooting and system diagnostic utilities
+- [Diagnostics and Repair](DiagnosticsAndRepair.md) - Star Trek-themed network diagnostics and system repair tools
