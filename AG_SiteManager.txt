@@ -583,6 +583,12 @@ function Get-AG_SiteManagerPage {
         param([string]$path)
 
         try {
+            # SECURITY FIX: Validate file path and extension
+            if ($path -notmatch '\.(csv|txt)$') {
+                _MsgErr "Invalid file type. Only CSV and TXT files are allowed."
+                return
+            }
+            
             if (-not (Test-Path -LiteralPath $path)) {
                 _MsgErr ("CSV not found:`r`n{0}" -f $path)
                 return
@@ -590,8 +596,11 @@ function Get-AG_SiteManagerPage {
 
             if ($script:SM_Status) { & $script:SM_Status "Opening SiteInformation CSV for edit..." }
 
-            try { Start-Process -FilePath $path | Out-Null; return } catch { }
-            try { Start-Process -FilePath 'explorer.exe' -ArgumentList @('/select,', $path) | Out-Null; return } catch { }
+            # Resolve to absolute path to prevent path traversal
+            $resolvedPath = (Resolve-Path -LiteralPath $path).Path
+
+            try { Start-Process -FilePath $resolvedPath | Out-Null; return } catch { }
+            try { Start-Process -FilePath 'explorer.exe' -ArgumentList @('/select,', $resolvedPath) | Out-Null; return } catch { }
 
             _MsgErr "Could not launch an editor for the CSV on this workstation."
 

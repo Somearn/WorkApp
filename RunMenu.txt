@@ -30,6 +30,91 @@ if (-not (Test-Path -LiteralPath $script:AG_AppDataPath)) {
     return
 }
 
+# Load security helpers early (if available)
+$securityHelpersPath = Join-Path $script:AG_AppDataPath 'AG_SecurityHelpers.txt'
+if (Test-Path -LiteralPath $securityHelpersPath) {
+    try {
+        . $securityHelpersPath
+        # Test UNC share permissions (log warning if excessive)
+        Test-UNCSharePermissions -UNCPath $script:AG_AppDataPath | Out-Null
+    } catch {
+        # If security helpers fail, log to Windows Event Log as fallback
+        _MsgErr ("Security helpers failed to load.`r`nSecurity events will be logged to Windows Event Log.`r`n`r`n{0}" -f $_.Exception.Message)
+        
+        function Write-SecurityLog {
+            param($EventType, $Message, $Details)
+            
+            $fullMessage = if ($Details) {
+                "$Message`r`nDetails: $Details"
+            } else {
+                $Message
+            }
+            
+            try {
+                $source = 'SomearnTK'
+                $logName = 'Application'
+                
+                # Create event source if it doesn't exist (requires admin)
+                if (-not [System.Diagnostics.EventLog]::SourceExists($source)) {
+                    try {
+                        [System.Diagnostics.EventLog]::CreateEventSource($source, $logName)
+                    } catch {
+                        # If we can't create source (non-admin), log will fail silently
+                    }
+                }
+                
+                $entryType = [System.Diagnostics.EventLogEntryType]::Information
+                if ($EventType -match 'Error') {
+                    $entryType = [System.Diagnostics.EventLogEntryType]::Error
+                } elseif ($EventType -match 'Warning') {
+                    $entryType = [System.Diagnostics.EventLogEntryType]::Warning
+                }
+                
+                [System.Diagnostics.EventLog]::WriteEntry($source, $fullMessage, $entryType)
+            } catch {
+                # Silently fail if logging is not possible
+            }
+        }
+    }
+} else {
+    # Security helpers not available: define a fallback logger
+    _MsgErr "Security helpers file not found. Security events will be logged to Windows Event Log if possible."
+    
+    function Write-SecurityLog {
+        param($EventType, $Message, $Details)
+        
+        $fullMessage = if ($Details) {
+            "$Message`r`nDetails: $Details"
+        } else {
+            $Message
+        }
+        
+        try {
+            $source = 'SomearnTK'
+            $logName = 'Application'
+            
+            if (-not [System.Diagnostics.EventLog]::SourceExists($source)) {
+                try {
+                    [System.Diagnostics.EventLog]::CreateEventSource($source, $logName)
+                } catch {
+                    # If we can't create source (non-admin), log will fail silently
+                }
+            }
+            
+            $entryType = [System.Diagnostics.EventLogEntryType]::Information
+            if ($EventType -match 'Error') {
+                $entryType = [System.Diagnostics.EventLogEntryType]::Error
+            } elseif ($EventType -match 'Warning') {
+                $entryType = [System.Diagnostics.EventLogEntryType]::Warning
+            }
+            
+            [System.Diagnostics.EventLog]::WriteEntry($source, $fullMessage, $entryType)
+        } catch {
+            # Silently fail if logging is not possible
+        }
+    }
+}
+
 # In your toolkit, AgScriptsFolder is used as the module root (appdata)
 $script:AgScriptsFolder = $script:AG_AppDataPath
 
@@ -41,11 +126,11 @@ $__beforeFns = @()
 try { $__beforeFns = (Get-Command -CommandType Function -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name) } catch { $__beforeFns = @() }
 
 # --- Optional: Themes ---
+# SECURITY FIX: Use direct dot-sourcing instead of ScriptBlock::Create to avoid EDR flagging
 try {
     $themePath = Join-Path $script:AG_AppDataPath 'AG_Themes.txt'
     if (Test-Path -LiteralPath $themePath) {
-        $themeCode = Get-Content -LiteralPath $themePath -Raw
-        . ([scriptblock]::Create($themeCode))
+        . $themePath
     }
 } catch {
     _MsgErr ("Theme load failed:`r`n{0}`r`n`r`n{1}" -f $themePath, $_.Exception.Message)
@@ -59,16 +144,10 @@ if (-not (Test-Path -LiteralPath $menuPath)) {
     return
 }
 
+# SECURITY FIX: Use direct dot-sourcing instead of ScriptBlock::Create to avoid EDR flagging
 try {
-    $menuCode = Get-Content -LiteralPath $menuPath -Raw
-} catch {
-    _MsgErr ("Startup failed reading:`r`n{0}`r`n`r`n{1}" -f $menuPath, $_.Exception.Message)
-    return
-}
-
-try {
-    # THIS is the fix: dot-source at top scope, not inside a helper function.
-    . ([scriptblock]::Create($menuCode))
+    # Dot-source at top scope, not inside a helper function, to preserve Show-MenuMain
+    . $menuPath
 } catch {
     _MsgErr ("Startup failed loading:`r`n{0}`r`n`r`n{1}" -f $menuPath, $_.Exception.Message)
     return

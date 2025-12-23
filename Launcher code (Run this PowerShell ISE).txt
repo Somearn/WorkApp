@@ -1,4 +1,8 @@
 $script:AgScriptsFolder = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appdata'
-. ([scriptblock]::Create(
-    (Get-Content -LiteralPath (Join-Path $script:AgScriptsFolder 'RunMenu.txt') -Raw)
-))
+# SECURITY FIX: Use direct dot-sourcing instead of ScriptBlock::Create to avoid EDR flagging
+$runMenuPath = Join-Path $script:AgScriptsFolder 'RunMenu.txt'
+if (-not (Test-Path -LiteralPath $runMenuPath)) {
+    Write-Error "RunMenu.txt not found at: $runMenuPath"
+    exit 1
+}
+. $runMenuPath

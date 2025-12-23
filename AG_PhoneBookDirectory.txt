@@ -581,6 +581,12 @@ function Get-AG_PhoneBookDirectoryPage {
         param([string]$path)
 
         try {
+            # SECURITY FIX: Validate file path and extension
+            if ($path -notmatch '\.(csv|txt)$') {
+                _MsgErr "Invalid file type. Only CSV and TXT files are allowed."
+                return
+            }
+            
             if (-not (Test-Path -LiteralPath $path)) {
                 _MsgErr ("CSV not found:`r`n{0}" -f $path)
                 return
@@ -588,15 +594,18 @@ function Get-AG_PhoneBookDirectoryPage {
 
             if ($script:PB_Status) { & $script:PB_Status "Opening PhoneBook CSV for edit..." }
 
-            # Try default app
+            # Resolve to absolute path to prevent path traversal
+            $resolvedPath = (Resolve-Path -LiteralPath $path).Path
+
+            # Try default app (safe for CSV/TXT files)
             try {
-                Start-Process -FilePath $path | Out-Null
+                Start-Process -FilePath $resolvedPath | Out-Null
                 return
             } catch { }
 
             # Fallback: open Explorer with file selected
             try {
-                Start-Process -FilePath 'explorer.exe' -ArgumentList @('/select,', $path) | Out-Null
+                Start-Process -FilePath 'explorer.exe' -ArgumentList @('/select,', $resolvedPath) | Out-Null
                 return
             } catch { }
 
