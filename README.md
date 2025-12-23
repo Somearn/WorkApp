@@ -75,7 +75,7 @@ Review this log for:
 
 Browse the `apps/` directory to find available applications. Each app has its own README with specific instructions.
 
-For SomearnTK modules, run `RunMenu.txt` with PowerShell ISE or execute the launcher code.
+For SomearnTK modules, run `Launcher.ps1` with PowerShell or PowerShell ISE.
 
 ## System Requirements
 

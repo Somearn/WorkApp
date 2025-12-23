@@ -22,8 +22,14 @@ function _MsgErr([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'Somear
 function _MsgInfo([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Information') | Out-Null }
 
 # ---- Hard paths ----
-$script:AG_AppDataPath    = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appdata'
-$script:AG_AppScriptsPath = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appscripts'
+# If AgScriptsFolder was set by the launcher, use it; otherwise use production UNC paths
+if ($script:AgScriptsFolder -and (Test-Path -LiteralPath $script:AgScriptsFolder)) {
+    $script:AG_AppDataPath    = $script:AgScriptsFolder
+    $script:AG_AppScriptsPath = $script:AgScriptsFolder  # In local dev, scripts are in same folder
+} else {
+    $script:AG_AppDataPath    = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appdata'
+    $script:AG_AppScriptsPath = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appscripts'
+}
 
 if (-not (Test-Path -LiteralPath $script:AG_AppDataPath)) {
     _MsgErr "Startup failed:`r`nAppData path not found:`r`n$script:AG_AppDataPath"
