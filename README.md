@@ -61,14 +61,15 @@ Review this log for:
 ### For Administrators
 
 **UNC Share Permissions:**
-- Ensure `\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\` is read-only for standard users
+- **Note:** If you cannot modify UNC share permissions, the application will log warnings but continue to operate. This is acceptable if the share is managed by IT and you trust the access controls in place.
+- Ideally, ensure `\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\` is read-only for standard users
 - Grant write permissions only to administrators
-- Application validates permissions on startup
+- Application validates permissions on startup and logs warnings if excessive permissions detected
 
 **Hash Allowlist Maintenance:**
 - Update `$script:AG_ModuleHashes` in `AG_SecurityHelpers.txt` when modules change
 - Generate hashes with: `Get-FileHash -Algorithm SHA256 -LiteralPath <file>`
-- **Important:** Failing to update hashes after legitimate module changes will cause integrity validation failures and prevent module loading
+- **Important:** Hash validation is currently configured in permissive mode - modules with empty hash lists will load with a warning only. To enforce strict validation (fail-closed behavior), populate the hash lists and modify the `Test-ModuleIntegrity` function to throw on hash mismatch instead of just logging a warning.
 
 ## Getting Started
 

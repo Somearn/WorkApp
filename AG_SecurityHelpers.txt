@@ -5,7 +5,29 @@
 $ErrorActionPreference = 'Stop'
 
 # Initialize security log path
-$script:AG_SecurityLogPath = Join-Path $env:TEMP 'SomearnTK_Security.log'
+# NOTE: Log is created in user's TEMP directory. This means the log file can be 
+# read/modified/deleted by the user. For true tamper-proof audit trail, consider 
+# using a centralized logging system or Windows Event Log.
+try {
+    $programDataPath = $env:ProgramData
+    if (-not [string]::IsNullOrWhiteSpace($programDataPath)) {
+        $logDirectory = Join-Path $programDataPath 'WorkApp\Security'
+
+        if (-not (Test-Path -LiteralPath $logDirectory)) {
+            New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
+        }
+
+        $script:AG_SecurityLogPath = Join-Path $logDirectory 'SomearnTK_Security.log'
+    }
+    else {
+        # Fallback to TEMP if ProgramData is not available
+        $script:AG_SecurityLogPath = Join-Path $env:TEMP 'SomearnTK_Security.log'
+    }
+}
+catch {
+    # Fallback to TEMP if ProgramData is not writable or any error occurs
+    $script:AG_SecurityLogPath = Join-Path $env:TEMP 'SomearnTK_Security.log'
+}
 
 # Known-good file hashes (SHA256) for integrity validation
 # IMPORTANT: Update these hashes when modules are legitimately updated
@@ -149,12 +171,15 @@ function Test-UNCSharePermissions {
         $acl = Get-Acl -LiteralPath $UNCPath -ErrorAction Stop
         
         # Check for excessive permissions (Everyone, Users with Modify/FullControl)
-        # Use more specific pattern to avoid false positives
+        # Use exact matching to avoid false positives with groups like "PowerUsers"
         $riskyPermissions = $acl.Access | Where-Object {
-            ($_.IdentityReference.Value -match '\\(Everyone|Users)$' -or
-             $_.IdentityReference.Value -eq 'Everyone' -or
-             $_.IdentityReference.Value -eq 'Users' -or
-             $_.IdentityReference.Value -match '^BUILTIN\\(Everyone|Users)$') -and
+            $identity = $_.IdentityReference.Value
+            (
+                $identity -eq 'Everyone' -or
+                $identity -eq 'BUILTIN\Users' -or
+                $identity -eq 'NT AUTHORITY\Authenticated Users' -or
+                $identity -match '\\Users$'
+            ) -and
             ($_.FileSystemRights -match '(Modify|FullControl|Write)')
         }
         
@@ -229,18 +254,18 @@ function Assert-SecureModuleLoad {
         $resolved = (Resolve-Path -LiteralPath $candidate -ErrorAction Stop).Path
         
         # 4. Ensure resolved path is under base (prevent symlink/junction attacks)
-        if ($resolved.Length -lt $baseResolved.Length) {
-            Write-SecurityLog -EventType Error -Message "Path validation failed - too short" -Details $resolved
-            throw "Blocked module path: $resolved"
-        }
+        # Normalize paths to lowercase for consistent comparison
+        $resolvedLower = $resolved.ToLowerInvariant()
+        $baseLower = $baseResolved.ToLowerInvariant()
         
-        # Additional check: paths must match exactly in prefix
-        if (-not $resolved.StartsWith($baseResolved, [StringComparison]::OrdinalIgnoreCase)) {
+        if (-not $resolvedLower.StartsWith($baseLower, [StringComparison]::Ordinal)) {
             Write-SecurityLog -EventType Error -Message "Path outside trusted base" -Details "Base: $baseResolved, Path: $resolved"
             throw "Blocked module path outside trusted base"
         }
         
-        # 5. File size validation (prevent DoS)
+        # 5. File size validation (prevent DoS from loading extremely large files into memory)
+        # 2MB limit chosen to allow reasonably large modules while preventing UI freeze
+        # from attempting to load multi-megabyte text files
         $fi = Get-Item -LiteralPath $resolved -ErrorAction Stop
         if ($fi.Length -gt 2MB) {
             Write-SecurityLog -EventType Error -Message "Module file too large" -Details "$leaf ($($fi.Length) bytes)"

@@ -157,8 +157,16 @@ function Get-AG_DiagnosticsAndRepairPage {
                 
                 # SECURITY FIX: Validate hostname/IP format to prevent command injection
                 # Allow: alphanumeric, dots, hyphens, and localhost
+                # Additional validation: no consecutive dots, no leading/trailing dots
                 if ($target -notmatch '^[a-zA-Z0-9.-]+$') {
                     _MsgErr "Invalid hostname format. Only alphanumeric characters, dots, and hyphens are allowed."
+                    & $script:DR_Status "$ToolName - Invalid hostname"
+                    return
+                }
+                
+                # Validate no consecutive dots, leading, or trailing dots
+                if ($target -match '\.\.' -or $target -match '^\.' -or $target -match '\.$') {
+                    _MsgErr "Invalid hostname format. No consecutive, leading, or trailing dots allowed."
                     & $script:DR_Status "$ToolName - Invalid hostname"
                     return
                 }
@@ -188,6 +196,9 @@ function Get-AG_DiagnosticsAndRepairPage {
             # Base64 encoded commands trigger EDR alerts as obfuscation/malware pattern
             $tempScript = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "DR_$([guid]::NewGuid().ToString()).ps1")
             
+            # Note: Temp file cleanup is embedded in script. If PowerShell window is forcefully 
+            # closed, temp file may remain. This is acceptable for diagnostic tools that run 
+            # briefly and clean up on normal completion.
             $psScriptContent = @"
 Write-Host '═══════════════════════════════════════════════════════════' -ForegroundColor Cyan
 Write-Host ' DIAGNOSTICS AND REPAIR - $ToolName' -ForegroundColor Yellow

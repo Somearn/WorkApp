@@ -530,8 +530,9 @@ function Show-AppGroupManagerView {
                 return
             }
             
-            # SECURITY FIX: Validate file path and extension before opening
-            if ($path -notmatch '\.csv$') {
+            # SECURITY FIX: Validate file extension to prevent execution of dangerous files
+            # Use GetExtension to avoid bypasses like "malicious.exe.csv"
+            if ([System.IO.Path]::GetExtension($path) -ine '.csv') {
                 [System.Windows.Forms.MessageBox]::Show("Invalid file type. Only CSV files are allowed.","SomearnTK","OK","Error") | Out-Null
                 return
             }
