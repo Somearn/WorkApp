@@ -149,8 +149,12 @@ function Test-UNCSharePermissions {
         $acl = Get-Acl -LiteralPath $UNCPath -ErrorAction Stop
         
         # Check for excessive permissions (Everyone, Users with Modify/FullControl)
+        # Use more specific pattern to avoid false positives
         $riskyPermissions = $acl.Access | Where-Object {
-            ($_.IdentityReference -match '(Everyone|Users)') -and
+            ($_.IdentityReference.Value -match '\\(Everyone|Users)$' -or
+             $_.IdentityReference.Value -eq 'Everyone' -or
+             $_.IdentityReference.Value -eq 'Users' -or
+             $_.IdentityReference.Value -match '^BUILTIN\\(Everyone|Users)$') -and
             ($_.FileSystemRights -match '(Modify|FullControl|Write)')
         }
         
@@ -230,7 +234,8 @@ function Assert-SecureModuleLoad {
             throw "Blocked module path: $resolved"
         }
         
-        if ($resolved.Substring(0, $baseResolved.Length).ToLowerInvariant() -ne $baseResolved.ToLowerInvariant()) {
+        # Additional check: paths must match exactly in prefix
+        if (-not $resolved.StartsWith($baseResolved, [StringComparison]::OrdinalIgnoreCase)) {
             Write-SecurityLog -EventType Error -Message "Path outside trusted base" -Details "Base: $baseResolved, Path: $resolved"
             throw "Blocked module path outside trusted base"
         }
@@ -290,11 +295,5 @@ function Initialize-SecuritySubsystem {
 # Auto-initialize when module loads
 Initialize-SecuritySubsystem
 
-# Export functions for use in other modules
-Export-ModuleMember -Function @(
-    'Write-SecurityLog',
-    'Test-ModuleIntegrity',
-    'Test-UNCSharePermissions',
-    'Assert-SecureModuleLoad',
-    'Initialize-SecuritySubsystem'
-)
+# Note: Export-ModuleMember is not needed for .txt files that are dot-sourced
+# All functions are automatically available in the caller's scope after dot-sourcing

@@ -213,7 +213,7 @@ Write-Host 'Press any key to close...' -ForegroundColor Gray
 `$null = `$Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
 
 # Cleanup temp script
-try { Remove-Item -LiteralPath '$tempScript' -Force -ErrorAction SilentlyContinue } catch {}
+try { Remove-Item -LiteralPath "$tempScript" -Force -ErrorAction SilentlyContinue } catch {}
 "@
 
             # Write script to temp file
@@ -241,8 +241,10 @@ try { Remove-Item -LiteralPath '$tempScript' -Force -ErrorAction SilentlyContinu
             }
 
         } catch {
-            # Cleanup temp file on error
-            try { Remove-Item -LiteralPath $tempScript -Force -ErrorAction SilentlyContinue } catch {}
+            # Cleanup temp file on error (with try-catch for safety)
+            if ($tempScript) {
+                try { Remove-Item -LiteralPath $tempScript -Force -ErrorAction SilentlyContinue } catch {}
+            }
             _MsgErr "Failed to launch $ToolName : $($_.Exception.Message)"
             & $script:DR_Status "$ToolName - Failed"
         }
