@@ -131,9 +131,9 @@ These exact constructs are likely to trigger EDR/AppLocker alerts:
 5. **Fix #1 (Populate hash allowlists, enforce fail-closed) - 2 hours**
    - Generate SHA256 hashes for all modules:
      ```powershell
-     Get-ChildItem *.txt | % { 
-         $h = (Get-FileHash $_.FullName).Hash
-         Write-Host "'$($_.Name)' = @('$h')"
+     Get-ChildItem -Filter *.txt | ForEach-Object {
+         $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
+         "'{0}' = @('{1}')" -f $_.Name, $hash
      }
      ```
    - Update `AG_SecurityHelpers.txt:34-45` with actual hashes
