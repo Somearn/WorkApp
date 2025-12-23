@@ -1,8 +1,77 @@
-﻿$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Stop'
 
 Add-Type -AssemblyName System.Windows.Forms | Out-Null
 Add-Type -AssemblyName System.Drawing       | Out-Null
 [System.Windows.Forms.Application]::EnableVisualStyles()
+
+# ----------------------------
+# SECURITY HARDENING (NO IEX / NO ScriptBlock::Create)
+# - Loads only from a single trusted base folder
+# - Dot-sources the module FILE PATH (not string-to-execution)
+# - Blocks traversal / non-base paths (fail-closed)
+# ----------------------------
+
+# Trusted base for all TXT modules (override by setting $script:AgScriptsFolder earlier in your launcher)
+$script:AG_TrustedBase = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appscripts'
+if (-not $script:AgScriptsFolder -or [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
+    $script:AgScriptsFolder = $script:AG_TrustedBase
+}
+
+function Resolve-AgTrustedPath {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$BaseFolder,
+        [Parameter(Mandatory)][string]$FileName
+    )
+
+    $baseResolved = (Resolve-Path -LiteralPath $BaseFolder -ErrorAction Stop).Path
+
+    # Only allow leaf file names (no subfolders, no traversal)
+    $leaf = Split-Path -Leaf $FileName
+    if ($leaf -ne $FileName) { throw "Blocked module name (must be leaf filename only): $FileName" }
+
+    $candidate = Join-Path $baseResolved $leaf
+    $resolved  = (Resolve-Path -LiteralPath $candidate -ErrorAction Stop).Path
+
+    # Ensure resolved path is under base
+    if ($resolved.Length -lt $baseResolved.Length) { throw "Blocked module path: $resolved" }
+    if ($resolved.Substring(0, $baseResolved.Length).ToLowerInvariant() -ne $baseResolved.ToLowerInvariant()) {
+        throw "Blocked module path outside trusted base.`nBase: $baseResolved`nPath: $resolved"
+    }
+
+    # Hygiene: file size cap (prevents UI DoS via huge file)
+    $fi = Get-Item -LiteralPath $resolved -ErrorAction Stop
+    if ($fi.Length -gt 2MB) { throw "Blocked module (too large): $leaf ($($fi.Length) bytes)" }
+
+    return $resolved
+}
+
+function Import-AG_TxtModuleSafe {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$FileName,
+        [Parameter()][string[]]$RequiredCommands = @()
+    )
+
+    $base = $script:AgScriptsFolder
+    if (-not $base -or [string]::IsNullOrWhiteSpace($base)) {
+        $base = $script:AG_TrustedBase
+    }
+
+    $path = Resolve-AgTrustedPath -BaseFolder $base -FileName $FileName
+
+    # Dot-source the file PATH (no ScriptBlock::Create)
+    . $path
+
+    foreach ($c in $RequiredCommands) {
+        if (-not (Get-Command -Name $c -ErrorAction SilentlyContinue)) {
+            throw "Module loaded but missing function: $c (from $FileName)"
+        }
+    }
+}
+
+function _MsgErr([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Error') | Out-Null }
+function _MsgInfo([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Information') | Out-Null }
 
 # MENU LINK: Phone Book (Menu Button 2)
 function Show-PhoneBookDirectoryView {
@@ -11,50 +80,17 @@ function Show-PhoneBookDirectoryView {
         [Parameter()][System.Windows.Forms.Panel]$HostPanel
     )
 
-    function _MsgErr([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Error') | Out-Null }
-
     try {
         if (-not $HostPanel) { throw "Host panel not available." }
 
         if (-not (Get-Command -Name 'Get-AG_PhoneBookDirectoryPage' -ErrorAction SilentlyContinue)) {
-
-            $candidates = New-Object System.Collections.Generic.List[string]
-
-            if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
-                $candidates.Add((Join-Path $script:AgScriptsFolder 'AG_PhoneBookDirectory.txt')) | Out-Null
-            }
-
-            if ($script:AG_LaunchPath -and -not [string]::IsNullOrWhiteSpace($script:AG_LaunchPath)) {
-                $launcherDir = Split-Path -Parent $script:AG_LaunchPath
-                $candidates.Add((Join-Path $launcherDir 'AG_PhoneBookDirectory.txt')) | Out-Null
-            }
-
-            if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
-                $root = Split-Path -Parent $script:AgScriptsFolder
-                $candidates.Add((Join-Path $root 'appscripts\AG_PhoneBookDirectory.txt')) | Out-Null
-            }
-
-            foreach ($p in ($candidates | Select-Object -Unique)) {
-                if ($p -and (Test-Path -LiteralPath $p)) {
-                    $code = Get-Content -LiteralPath $p -Raw
-                    . ([scriptblock]::Create($code))
-                    break
-                }
-            }
-        }
-
-        if (-not (Get-Command -Name 'Get-AG_PhoneBookDirectoryPage' -ErrorAction SilentlyContinue)) {
-            throw "PhoneBook module not loaded. Missing function: Get-AG_PhoneBookDirectoryPage"
+            Import-AG_TxtModuleSafe -FileName 'AG_PhoneBookDirectory.txt' -RequiredCommands @('Get-AG_PhoneBookDirectoryPage')
         }
 
         $HostPanel.SuspendLayout()
         $HostPanel.Controls.Clear()
 
-        $dataPath = if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
-            Join-Path $script:AgScriptsFolder 'PhoneBook.csv'
-        } else {
-            'PhoneBook.csv'
-        }
+        $dataPath = Join-Path $script:AgScriptsFolder 'PhoneBook.csv'
 
         $page = Get-AG_PhoneBookDirectoryPage -SetStatus {
             param($t)
@@ -81,37 +117,14 @@ function Show-SiteManagerView {
         [Parameter()][System.Windows.Forms.Panel]$HostPanel
     )
 
-    function _MsgErr([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Error') | Out-Null }
-
     try {
         if (-not $HostPanel) { throw "Host panel not available." }
 
         if (-not (Get-Command -Name 'Get-AG_SiteManagerPage' -ErrorAction SilentlyContinue) -and
             -not (Get-Command -Name 'Show-SiteManager'      -ErrorAction SilentlyContinue)) {
 
-            $candidates = New-Object System.Collections.Generic.List[string]
-
-            if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
-                $candidates.Add((Join-Path $script:AgScriptsFolder 'AG_SiteManager.txt')) | Out-Null
-            }
-
-            if ($script:AG_LaunchPath -and -not [string]::IsNullOrWhiteSpace($script:AG_LaunchPath)) {
-                $launcherDir = Split-Path -Parent $script:AG_LaunchPath
-                $candidates.Add((Join-Path $launcherDir 'AG_SiteManager.txt')) | Out-Null
-            }
-
-            if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
-                $root = Split-Path -Parent $script:AgScriptsFolder
-                $candidates.Add((Join-Path $root 'appscripts\AG_SiteManager.txt')) | Out-Null
-            }
-
-            foreach ($p in ($candidates | Select-Object -Unique)) {
-                if ($p -and (Test-Path -LiteralPath $p)) {
-                    $code = Get-Content -LiteralPath $p -Raw
-                    . ([scriptblock]::Create($code))
-                    break
-                }
-            }
+            # Prefer page-style module; allow legacy window function if that's what exists
+            Import-AG_TxtModuleSafe -FileName 'AG_SiteManager.txt' -RequiredCommands @()
         }
 
         if (Get-Command -Name 'Get-AG_SiteManagerPage' -ErrorAction SilentlyContinue) {
@@ -119,11 +132,7 @@ function Show-SiteManagerView {
             $HostPanel.SuspendLayout()
             $HostPanel.Controls.Clear()
 
-            $dataPath = if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
-                Join-Path $script:AgScriptsFolder 'SiteInformation.csv'
-            } else {
-                'SiteInformation.csv'
-            }
+            $dataPath = Join-Path $script:AgScriptsFolder 'SiteInformation.csv'
 
             $page = Get-AG_SiteManagerPage -SetStatus {
                 param($t)
@@ -161,35 +170,28 @@ function Show-AppGroupManagerView {
         [Parameter()][System.Windows.Forms.Panel]$HostPanel
     )
 
-    function _MsgErr([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Error') | Out-Null }
-
     try {
         if (-not $HostPanel) { throw "Host panel not available." }
 
         if (-not (Get-Command -Name 'Get-AG_AppGroupsPage' -ErrorAction SilentlyContinue) -and
             -not (Get-Command -Name 'Show-AppGroupManager' -ErrorAction SilentlyContinue)) {
 
-            $candidates = New-Object System.Collections.Generic.List[string]
+            # Keep compatibility with alternate module names, but still load ONLY from trusted base
+            $tryFiles = @('AG_AppGroups.txt','AG_AppGroupManager.txt','AG_AppGroupsManager.txt')
+            $loaded = $false
 
-            if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
-                foreach ($fn in @('AG_AppGroups.txt','AG_AppGroupManager.txt','AG_AppGroupsManager.txt')) {
-                    $candidates.Add((Join-Path $script:AgScriptsFolder $fn)) | Out-Null
-                }
-            }
-
-            if ($script:AG_LaunchPath -and -not [string]::IsNullOrWhiteSpace($script:AG_LaunchPath)) {
-                $launcherDir = Split-Path -Parent $script:AG_LaunchPath
-                foreach ($fn in @('AG_AppGroups.txt','AG_AppGroupManager.txt','AG_AppGroupsManager.txt')) {
-                    $candidates.Add((Join-Path $launcherDir $fn)) | Out-Null
-                }
-            }
-
-            foreach ($p in ($candidates | Select-Object -Unique)) {
-                if ($p -and (Test-Path -LiteralPath $p)) {
-                    $code = Get-Content -LiteralPath $p -Raw
-                    . ([scriptblock]::Create($code))
+            foreach ($fn in $tryFiles) {
+                try {
+                    Import-AG_TxtModuleSafe -FileName $fn -RequiredCommands @()
+                    $loaded = $true
                     break
+                } catch {
+                    # try next name
                 }
+            }
+
+            if (-not $loaded) {
+                throw "Application Manager module not loaded. Tried: $($tryFiles -join ', ')"
             }
         }
 
@@ -197,11 +199,7 @@ function Show-AppGroupManagerView {
             $HostPanel.SuspendLayout()
             $HostPanel.Controls.Clear()
 
-            $dataPath = if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
-                Join-Path $script:AgScriptsFolder 'AppGroups.csv'
-            } else {
-                'AppGroups.csv'
-            }
+            $dataPath = Join-Path $script:AgScriptsFolder 'AppGroups.csv'
 
             $page = Get-AG_AppGroupsPage -SetStatus {
                 param($t)
@@ -227,48 +225,27 @@ function Show-AppGroupManagerView {
     } catch {
         _MsgErr $_.Exception.Message
         if ($script:AG_StatusLabel) { $script:AG_StatusLabel.Text = 'Application Manager failed to open.' }
+    } finally {
+        try { $HostPanel.ResumeLayout() } catch {}
     }
 }
 
-# MENU LINK: Script Launcher (Menu Button 4) - EMBEDDED from AG_ScriptLauncherControlRoom.txt
+# MENU LINK: Script Launcher (Menu Button 4)
 function Show-ScriptLauncherView {
     [CmdletBinding()]
     param(
         [Parameter()][System.Windows.Forms.Panel]$HostPanel
     )
 
-    function _MsgErr([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Error') | Out-Null }
-
     try {
         if (-not $HostPanel) { throw "Host panel not available." }
 
         if (-not (Get-Command -Name 'Get-AG_ScriptLauncherPage' -ErrorAction SilentlyContinue)) {
-
-            $candidates = New-Object System.Collections.Generic.List[string]
-
-            if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
-                $candidates.Add((Join-Path $script:AgScriptsFolder 'AG_ScriptLauncherControlRoom.txt')) | Out-Null
-            }
-
-            if ($script:AG_LaunchPath -and -not [string]::IsNullOrWhiteSpace($script:AG_LaunchPath)) {
-                $launcherDir = Split-Path -Parent $script:AG_LaunchPath
-                $candidates.Add((Join-Path $launcherDir 'AG_ScriptLauncherControlRoom.txt')) | Out-Null
-            }
-
-            foreach ($p in ($candidates | Select-Object -Unique)) {
-                if ($p -and (Test-Path -LiteralPath $p)) {
-                    $code = Get-Content -LiteralPath $p -Raw
-                    . ([scriptblock]::Create($code))
-                    break
-                }
-            }
+            Import-AG_TxtModuleSafe -FileName 'AG_ScriptLauncherControlRoom.txt' -RequiredCommands @('Get-AG_ScriptLauncherPage')
         }
 
-        if (-not (Get-Command -Name 'Get-AG_ScriptLauncherPage' -ErrorAction SilentlyContinue)) {
-            throw "Script Launcher module not loaded. Missing function: Get-AG_ScriptLauncherPage"
-        }
-
-        $scriptsPath = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appscripts'
+        # Hard-pin scripts listing to trusted base (reduces accidental execution from random dirs)
+        $scriptsPath = $script:AG_TrustedBase
 
         $HostPanel.SuspendLayout()
         $HostPanel.Controls.Clear()
@@ -298,40 +275,11 @@ function Show-DiagnosticsAndRepairView {
         [Parameter()][System.Windows.Forms.Panel]$HostPanel
     )
 
-    function _MsgErr([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Error') | Out-Null }
-
     try {
         if (-not $HostPanel) { throw "Host panel not available." }
 
         if (-not (Get-Command -Name 'Get-AG_DiagnosticsAndRepairPage' -ErrorAction SilentlyContinue)) {
-
-            $candidates = New-Object System.Collections.Generic.List[string]
-
-            if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
-                $candidates.Add((Join-Path $script:AgScriptsFolder 'AG_DiagnosticsAndRepair.txt')) | Out-Null
-            }
-
-            if ($script:AG_LaunchPath -and -not [string]::IsNullOrWhiteSpace($script:AG_LaunchPath)) {
-                $launcherDir = Split-Path -Parent $script:AG_LaunchPath
-                $candidates.Add((Join-Path $launcherDir 'AG_DiagnosticsAndRepair.txt')) | Out-Null
-            }
-
-            if ($script:AgScriptsFolder -and -not [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
-                $root = Split-Path -Parent $script:AgScriptsFolder
-                $candidates.Add((Join-Path $root 'appscripts\AG_DiagnosticsAndRepair.txt')) | Out-Null
-            }
-
-            foreach ($p in ($candidates | Select-Object -Unique)) {
-                if ($p -and (Test-Path -LiteralPath $p)) {
-                    $code = Get-Content -LiteralPath $p -Raw
-                    . ([scriptblock]::Create($code))
-                    break
-                }
-            }
-        }
-
-        if (-not (Get-Command -Name 'Get-AG_DiagnosticsAndRepairPage' -ErrorAction SilentlyContinue)) {
-            throw "Diagnostics and Repair module not loaded. Missing function: Get-AG_DiagnosticsAndRepairPage"
+            Import-AG_TxtModuleSafe -FileName 'AG_DiagnosticsAndRepair.txt' -RequiredCommands @('Get-AG_DiagnosticsAndRepairPage')
         }
 
         $HostPanel.SuspendLayout()
@@ -360,37 +308,6 @@ function Show-MenuMain {
     if ($script:AG_MainForm -and -not $script:AG_MainForm.IsDisposed) {
         try { $script:AG_MainForm.Activate(); $script:AG_MainForm.BringToFront() } catch {}
         return
-    }
-
-    function MsgInfo([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Information') | Out-Null }
-    function MsgErr([string]$t){  [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Error')       | Out-Null }
-
-    function Invoke-CommandName([string]$name) {
-        try {
-            if ([string]::IsNullOrWhiteSpace($name)) { throw "Button command is blank." }
-
-            $cmd = Get-Command -Name $name -ErrorAction SilentlyContinue
-            if (-not $cmd) { throw "$name not found (module not loaded)." }
-
-            $p = $cmd.Parameters.Keys
-
-            if ($script:AG_RightHost -and ($p -contains 'HostPanel')) {
-                & $name -HostPanel $script:AG_RightHost
-            } elseif ($script:AG_RightHost -and ($p -contains 'Parent')) {
-                & $name -Parent $script:AG_RightHost
-            } elseif ($script:AG_RightHost -and ($p -contains 'MainPanel')) {
-                & $name -MainPanel $script:AG_RightHost
-            } else {
-                & $name
-            }
-
-            if ($script:AG_StatusLabel) {
-                $script:AG_StatusLabel.Text = ("Opened: " + $name)
-            }
-
-        } catch {
-            MsgErr $_.Exception.Message
-        }
     }
 
     $form = New-Object System.Windows.Forms.Form
@@ -451,6 +368,33 @@ function Show-MenuMain {
     $topLabel.Location = New-Object System.Drawing.Point(520,13)
     $top.Controls.Add($topLabel)
 
+    # Safe dispatch table: explicit allowlist only (removes "& $string" execution)
+    $dispatch = @{
+        'Show-AppGroupManagerView'       = { Show-AppGroupManagerView -HostPanel $script:AG_RightHost }
+        'Show-PhoneBookDirectoryView'    = { Show-PhoneBookDirectoryView -HostPanel $script:AG_RightHost }
+        'Show-SiteManagerView'           = { Show-SiteManagerView -HostPanel $script:AG_RightHost }
+        'Show-ScriptLauncherView'        = { Show-ScriptLauncherView -HostPanel $script:AG_RightHost }
+        'Show-DiagnosticsAndRepairView'  = { Show-DiagnosticsAndRepairView -HostPanel $script:AG_RightHost }
+        '__NOTIMPL__'                    = { }
+    }
+
+    function Invoke-MenuAction([string]$name, [string]$buttonText) {
+        try {
+            if ([string]::IsNullOrWhiteSpace($name)) { throw "Button command is blank." }
+
+            if ($name -eq '__NOTIMPL__') { _MsgInfo ($buttonText + ' not implemented yet.'); return }
+
+            if (-not $dispatch.ContainsKey($name)) { throw "Blocked unknown action: $name" }
+
+            & $dispatch[$name]
+
+            if ($script:AG_StatusLabel) { $script:AG_StatusLabel.Text = ("Opened: " + $buttonText) }
+
+        } catch {
+            _MsgErr $_.Exception.Message
+        }
+    }
+
     function New-MenuButton([string]$text, [int]$y, [string]$commandName) {
         $b = New-Object System.Windows.Forms.Button
         $b.Text = $text
@@ -465,10 +409,7 @@ function Show-MenuMain {
         $b.Tag = $commandName
 
         $b.Add_Click({
-            $name = [string]$this.Tag
-            if ($this.Text -eq 'Dashboard') { MsgInfo 'Dashboard not implemented yet.'; return }
-            if ($name -eq '__NOTIMPL__') { MsgInfo ($this.Text + ' not implemented yet.'); return }
-            Invoke-CommandName $name
+            Invoke-MenuAction -name ([string]$this.Tag) -buttonText ([string]$this.Text)
         })
 
         return $b
