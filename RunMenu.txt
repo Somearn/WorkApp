@@ -30,7 +30,7 @@ if ($script:AgScriptsFolder -and (Test-Path -LiteralPath $script:AgScriptsFolder
     $script:AG_AppScriptsPath = $script:AgScriptsFolder
 } else {
     $script:AG_AppDataPath    = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appdata'
-    $script:AG_AppScriptsPath = '\\lsfile03\netdoc$\Somearn_Folder\SomearnTK_app\appscripts'
+    $script:AG_AppScriptsPath = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appscripts'
 }
 
 if (-not (Test-Path -LiteralPath $script:AG_AppDataPath)) {
