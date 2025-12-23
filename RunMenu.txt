@@ -22,8 +22,16 @@ function _MsgErr([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'Somear
 function _MsgInfo([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'SomearnTK','OK','Information') | Out-Null }
 
 # ---- Hard paths ----
-$script:AG_AppDataPath    = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appdata'
-$script:AG_AppScriptsPath = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appscripts'
+# If AgScriptsFolder was set by the launcher, use it; otherwise use production UNC paths
+if ($script:AgScriptsFolder -and (Test-Path -LiteralPath $script:AgScriptsFolder)) {
+    $script:AG_AppDataPath    = $script:AgScriptsFolder
+    # In local dev, modules and scripts share the same folder (no separate appscripts directory),
+    # so both AG_AppDataPath and AG_AppScriptsPath are intentionally set to AgScriptsFolder.
+    $script:AG_AppScriptsPath = $script:AgScriptsFolder
+} else {
+    $script:AG_AppDataPath    = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appdata'
+    $script:AG_AppScriptsPath = '\\lsfile03\netdoc$\Somearn_Folder\SomearnTK_app\appscripts'
+}
 
 if (-not (Test-Path -LiteralPath $script:AG_AppDataPath)) {
     _MsgErr "Startup failed:`r`nAppData path not found:`r`n$script:AG_AppDataPath"
@@ -115,7 +123,10 @@ if (Test-Path -LiteralPath $securityHelpersPath) {
     }
 }
 
-# In your toolkit, AgScriptsFolder is used as the module root (appdata)
+# NOTE: AgScriptsFolder is a legacy variable name from an earlier version of this toolkit.
+# Despite its name, it actually points to the module root (appdata) where AG_*.txt module files are stored.
+# This is used by AG_MenuMain's Import-AG_TxtModuleSafe function to load modules.
+# For script inventory (user scripts), use AG_ScriptsInventoryPath instead.
 $script:AgScriptsFolder = $script:AG_AppDataPath
 
 # Expose appscripts inventory path for tools like Script Launcher (listing only)
