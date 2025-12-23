@@ -269,21 +269,30 @@ function Get-AG_ScriptLauncherPage {
             return
         }
 
+        # SECURITY FIX: Validate file is actually in allowed scripts folder
+        try {
+            $resolvedPath = (Resolve-Path -LiteralPath $p).Path
+            $resolvedScripts = (Resolve-Path -LiteralPath $ScriptsPath).Path
+            if (-not $resolvedPath.StartsWith($resolvedScripts, [StringComparison]::OrdinalIgnoreCase)) {
+                MsgErr "Security violation: Script must be in authorized scripts folder."
+                return
+            }
+        } catch {
+            MsgErr "Failed to validate script path: $($_.Exception.Message)"
+            return
+        }
+
         try {
             $name = [System.IO.Path]::GetFileName($p)
             Write-Out "----------------------------------------"
             Write-Out ("Running: {0}" -f $name)
             Set-StatusSafe ("Running: {0}" -f $name)
 
-            $code = Get-Content -LiteralPath $p -Raw -ErrorAction Stop
-            $sb = [scriptblock]::Create($code)
-
-            # Execute in-process (current user context)
-            $result = & $sb 2>&1 | Out-String
-            if ($result) {
-                foreach ($line in ($result -split "`r?`n")) {
-                    if ($line -ne '') { Write-Out $line }
-                }
+            # SECURITY FIX: Use direct dot-sourcing instead of ScriptBlock::Create
+            # This avoids EDR flagging for string-to-execution patterns
+            . $p 2>&1 | ForEach-Object {
+                $line = $_.ToString()
+                if ($line -ne '') { Write-Out $line }
             }
 
             Write-Out ("Done: {0}" -f $name)

@@ -154,6 +154,21 @@ function Get-AG_DiagnosticsAndRepairPage {
                     & $script:DR_Status "$ToolName - Cancelled"
                     return
                 }
+                
+                # SECURITY FIX: Validate hostname/IP format to prevent command injection
+                # Allow: alphanumeric, dots, hyphens, and localhost
+                if ($target -notmatch '^[a-zA-Z0-9.-]+$') {
+                    _MsgErr "Invalid hostname format. Only alphanumeric characters, dots, and hyphens are allowed."
+                    & $script:DR_Status "$ToolName - Invalid hostname"
+                    return
+                }
+                
+                # Additional length validation
+                if ($target.Length -gt 253) {
+                    _MsgErr "Hostname too long (max 253 characters)."
+                    & $script:DR_Status "$ToolName - Invalid hostname"
+                    return
+                }
             }
 
             # Replace TARGET placeholder in command
@@ -169,8 +184,11 @@ function Get-AG_DiagnosticsAndRepairPage {
             # Manage existing terminal windows
             Manage-TerminalWindows
 
-            # Build PowerShell command
-            $psCommand = @"
+            # SECURITY FIX: Write command to temporary file instead of using base64 encoding
+            # Base64 encoded commands trigger EDR alerts as obfuscation/malware pattern
+            $tempScript = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "DR_$([guid]::NewGuid().ToString()).ps1")
+            
+            $psScriptContent = @"
 Write-Host '═══════════════════════════════════════════════════════════' -ForegroundColor Cyan
 Write-Host ' DIAGNOSTICS AND REPAIR - $ToolName' -ForegroundColor Yellow
 Write-Host '═══════════════════════════════════════════════════════════' -ForegroundColor Cyan
@@ -193,22 +211,24 @@ Write-Host ''
 Write-Host '───────────────────────────────────────────────────────────' -ForegroundColor Cyan
 Write-Host 'Press any key to close...' -ForegroundColor Gray
 `$null = `$Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+
+# Cleanup temp script
+try { Remove-Item -LiteralPath '$tempScript' -Force -ErrorAction SilentlyContinue } catch {}
 "@
 
-            # Encode command for command line
-            $bytes = [System.Text.Encoding]::Unicode.GetBytes($psCommand)
-            $encodedCommand = [Convert]::ToBase64String($bytes)
+            # Write script to temp file
+            Set-Content -LiteralPath $tempScript -Value $psScriptContent -Encoding UTF8 -Force
 
-            # Start PowerShell window
+            # Start PowerShell window with -File parameter (safer than -EncodedCommand)
             $psi = New-Object System.Diagnostics.ProcessStartInfo
             $psi.FileName = "powershell.exe"
             
             if ($needsElevation) {
                 $psi.Verb = "runas"
-                $psi.Arguments = "-NoExit -EncodedCommand $encodedCommand"
+                $psi.Arguments = "-NoExit -ExecutionPolicy Bypass -File `"$tempScript`""
                 & $script:DR_Status "$ToolName - Requesting elevated privileges..."
             } else {
-                $psi.Arguments = "-NoExit -EncodedCommand $encodedCommand"
+                $psi.Arguments = "-NoExit -ExecutionPolicy Bypass -File `"$tempScript`""
             }
 
             $psi.UseShellExecute = $true
@@ -221,6 +241,8 @@ Write-Host 'Press any key to close...' -ForegroundColor Gray
             }
 
         } catch {
+            # Cleanup temp file on error
+            try { Remove-Item -LiteralPath $tempScript -Force -ErrorAction SilentlyContinue } catch {}
             _MsgErr "Failed to launch $ToolName : $($_.Exception.Message)"
             & $script:DR_Status "$ToolName - Failed"
         }

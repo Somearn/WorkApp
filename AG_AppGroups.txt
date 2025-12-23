@@ -529,13 +529,23 @@ function Show-AppGroupManagerView {
                 [System.Windows.Forms.MessageBox]::Show("CSV path is missing.","SomearnTK","OK","Error") | Out-Null
                 return
             }
+            
+            # SECURITY FIX: Validate file path and extension before opening
+            if ($path -notmatch '\.csv$') {
+                [System.Windows.Forms.MessageBox]::Show("Invalid file type. Only CSV files are allowed.","SomearnTK","OK","Error") | Out-Null
+                return
+            }
+            
             if (-not (Test-Path -LiteralPath $path)) {
                 [System.Windows.Forms.MessageBox]::Show("CSV not found:`r`n$path","SomearnTK","OK","Error") | Out-Null
                 return
             }
 
             try {
-                Start-Process -FilePath 'excel.exe' -ArgumentList "`"$path`"" | Out-Null
+                # Resolve to absolute path to prevent path traversal
+                $resolvedPath = (Resolve-Path -LiteralPath $path).Path
+                
+                Start-Process -FilePath 'excel.exe' -ArgumentList "`"$resolvedPath`"" | Out-Null
                 [System.Windows.Forms.MessageBox]::Show(
                     "Database opened in Excel.`r`nWhen you finish editing and save, click Resync Inventory to reload.",
                     'SomearnTK',
@@ -543,13 +553,23 @@ function Show-AppGroupManagerView {
                     [System.Windows.Forms.MessageBoxIcon]::Information
                 ) | Out-Null
             } catch {
-                Start-Process -FilePath $path | Out-Null
-                [System.Windows.Forms.MessageBox]::Show(
-                    "Database opened.`r`nWhen you finish editing and save, click Resync Inventory to reload.",
-                    'SomearnTK',
-                    [System.Windows.Forms.MessageBoxButtons]::OK,
-                    [System.Windows.Forms.MessageBoxIcon]::Information
-                ) | Out-Null
+                # Fallback to default application if Excel not available
+                try {
+                    Start-Process -FilePath $resolvedPath | Out-Null
+                    [System.Windows.Forms.MessageBox]::Show(
+                        "Database opened.`r`nWhen you finish editing and save, click Resync Inventory to reload.",
+                        'SomearnTK',
+                        [System.Windows.Forms.MessageBoxButtons]::OK,
+                        [System.Windows.Forms.MessageBoxIcon]::Information
+                    ) | Out-Null
+                } catch {
+                    [System.Windows.Forms.MessageBox]::Show(
+                        "Failed to open database file: $($_.Exception.Message)",
+                        'SomearnTK',
+                        [System.Windows.Forms.MessageBoxButtons]::OK,
+                        [System.Windows.Forms.MessageBoxIcon]::Error
+                    ) | Out-Null
+                }
             }
         }.GetNewClosure())
 
