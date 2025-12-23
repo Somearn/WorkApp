@@ -1,7 +1,0 @@
-# AG_Settings.txt (PROD)
-
-$global:AG_Settings = @{
-    Environment = 'PROD'
-    AppName     = 'SomearnTK'
-    Build       = '1080p-stable'
-}

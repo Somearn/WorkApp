@@ -1,8 +1,0 @@
-# AG_Themes.txt (PROD)
-
-$global:AG_Theme = @{
-    Name       = 'DarkOps'
-    Background = [System.Drawing.Color]::FromArgb(18,22,28)
-    Panel      = [System.Drawing.Color]::FromArgb(14,18,24)
-    Text       = [System.Drawing.Color]::Gainsboro
-}
