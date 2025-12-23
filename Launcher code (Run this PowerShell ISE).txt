@@ -1,14 +1,6 @@
 # Try production UNC path first, then fall back to script directory
 $productionPath = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appdata'
-# Handle multiple execution contexts: script file, ISE, and pasted code in console
-$scriptDirectory = if ($PSScriptRoot) { 
-    $PSScriptRoot 
-} elseif ($MyInvocation.MyCommand.Path) { 
-    Split-Path -Parent $MyInvocation.MyCommand.Path 
-} else { 
-    # Fallback for pasted code in console: use current directory
-    (Get-Location).Path 
-}
+$scriptDirectory = if ($PSScriptRoot) { $PSScriptRoot } elseif ($MyInvocation.MyCommand.Path) { Split-Path -Parent $MyInvocation.MyCommand.Path } else { (Get-Location).Path }
 
 # Helper function to test if RunMenu.txt exists in a path
 function Test-RunMenuPath($basePath) {
