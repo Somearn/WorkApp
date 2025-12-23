@@ -29,6 +29,9 @@ if (Test-Path -LiteralPath $securityHelpersPath) {
 
 # Trusted base for all TXT modules (override by setting $script:AgScriptsFolder earlier in your launcher)
 $script:AG_TrustedBase = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appdata'
+# Default path for script inventory (used by Script Launcher if AG_ScriptsInventoryPath is not set)
+$script:AG_DefaultScriptsInventory = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appscripts'
+
 if (-not $script:AgScriptsFolder -or [string]::IsNullOrWhiteSpace($script:AgScriptsFolder)) {
     $script:AgScriptsFolder = $script:AG_TrustedBase
 }
@@ -282,11 +285,11 @@ function Show-ScriptLauncherView {
         }
 
         # Hard-pin scripts listing to scripts inventory path (reduces accidental execution from random dirs)
-        # Use AG_ScriptsInventoryPath if set by RunMenu, otherwise fall back to AG_TrustedBase
+        # Use AG_ScriptsInventoryPath if set by RunMenu, otherwise fall back to default scripts inventory
         $scriptsPath = if ($script:AG_ScriptsInventoryPath) { 
             $script:AG_ScriptsInventoryPath 
         } else { 
-            '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appscripts'
+            $script:AG_DefaultScriptsInventory
         }
 
         $HostPanel.SuspendLayout()

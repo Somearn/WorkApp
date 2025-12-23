@@ -23,5 +23,8 @@ if (Test-RunMenuPath $productionPath) {
 }
 
 # SECURITY FIX: Use direct dot-sourcing instead of ScriptBlock::Create to avoid EDR flagging
+# EDR systems often flag dynamic code execution patterns like ScriptBlock::Create, Invoke-Expression,
+# and similar constructs as they're commonly used in malicious scripts. Direct dot-sourcing of a file
+# path is a safer pattern that's less likely to trigger security alerts.
 $runMenuPath = Join-Path $script:AgScriptsFolder 'RunMenu.txt'
 . $runMenuPath
