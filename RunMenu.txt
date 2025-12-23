@@ -25,11 +25,12 @@ function _MsgInfo([string]$t){ [System.Windows.Forms.MessageBox]::Show($t,'Somea
 # If AgScriptsFolder was set by the launcher, use it; otherwise use production UNC paths
 if ($script:AgScriptsFolder -and (Test-Path -LiteralPath $script:AgScriptsFolder)) {
     $script:AG_AppDataPath    = $script:AgScriptsFolder
-    # In local dev, both modules and scripts are in same folder (no separate appscripts directory)
+    # In local dev, modules and scripts share the same folder (no separate appscripts directory),
+    # so both AG_AppDataPath and AG_AppScriptsPath are intentionally set to AgScriptsFolder.
     $script:AG_AppScriptsPath = $script:AgScriptsFolder
 } else {
     $script:AG_AppDataPath    = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appdata'
-    $script:AG_AppScriptsPath = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appscripts'
+    $script:AG_AppScriptsPath = '\\lsfile03\netdoc$\Somearn_Folder\SomearnTK_app\appscripts'
 }
 
 if (-not (Test-Path -LiteralPath $script:AG_AppDataPath)) {
