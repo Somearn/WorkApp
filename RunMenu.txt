@@ -30,6 +30,22 @@ if (-not (Test-Path -LiteralPath $script:AG_AppDataPath)) {
     return
 }
 
+# Load security helpers early (if available)
+$securityHelpersPath = Join-Path $script:AG_AppDataPath 'AG_SecurityHelpers.txt'
+if (Test-Path -LiteralPath $securityHelpersPath) {
+    try {
+        . $securityHelpersPath
+        # Test UNC share permissions (log warning if excessive)
+        Test-UNCSharePermissions -UNCPath $script:AG_AppDataPath | Out-Null
+    } catch {
+        # If security helpers fail, continue without them
+        function Write-SecurityLog { param($EventType, $Message, $Details) }
+    }
+} else {
+    # Stub function if security helpers not available
+    function Write-SecurityLog { param($EventType, $Message, $Details) }
+}
+
 # In your toolkit, AgScriptsFolder is used as the module root (appdata)
 $script:AgScriptsFolder = $script:AG_AppDataPath
 

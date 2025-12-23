@@ -9,7 +9,23 @@ Add-Type -AssemblyName System.Drawing       | Out-Null
 # - Loads only from a single trusted base folder
 # - Dot-sources the module FILE PATH (not string-to-execution)
 # - Blocks traversal / non-base paths (fail-closed)
+# - Integrates with security logging subsystem
 # ----------------------------
+
+# Load security helpers first
+$securityHelpersPath = Join-Path $script:AG_AppDataPath 'AG_SecurityHelpers.txt'
+if (Test-Path -LiteralPath $securityHelpersPath) {
+    try {
+        . $securityHelpersPath
+        Write-SecurityLog -EventType Load -Message "Security helpers loaded" -Details $securityHelpersPath
+    } catch {
+        # If security helpers fail to load, continue with basic validation
+        function Write-SecurityLog { param($EventType, $Message, $Details) }
+    }
+} else {
+    # Stub function if security helpers not available
+    function Write-SecurityLog { param($EventType, $Message, $Details) }
+}
 
 # Trusted base for all TXT modules (override by setting $script:AgScriptsFolder earlier in your launcher)
 $script:AG_TrustedBase = '\\lsfile03\netdoc$\Somearns_Folder\SomearnTK_app\appscripts'
@@ -24,6 +40,17 @@ function Resolve-AgTrustedPath {
         [Parameter(Mandatory)][string]$FileName
     )
 
+    # ENHANCED: Use security validation if available
+    if (Get-Command Assert-SecureModuleLoad -ErrorAction SilentlyContinue) {
+        try {
+            return Assert-SecureModuleLoad -BasePath $BaseFolder -FileName $FileName
+        } catch {
+            Write-SecurityLog -EventType Error -Message "Secure module load failed" -Details "$FileName : $($_.Exception.Message)"
+            throw
+        }
+    }
+
+    # Fallback to original validation if security helpers not loaded
     $baseResolved = (Resolve-Path -LiteralPath $BaseFolder -ErrorAction Stop).Path
 
     # Only allow leaf file names (no subfolders, no traversal)
@@ -60,6 +87,11 @@ function Import-AG_TxtModuleSafe {
 
     $path = Resolve-AgTrustedPath -BaseFolder $base -FileName $FileName
 
+    # Log module load
+    if (Get-Command Write-SecurityLog -ErrorAction SilentlyContinue) {
+        Write-SecurityLog -EventType Load -Message "Loading module" -Details $FileName
+    }
+
     # Dot-source the file PATH (no ScriptBlock::Create)
     . $path
 
@@ -67,6 +99,11 @@ function Import-AG_TxtModuleSafe {
         if (-not (Get-Command -Name $c -ErrorAction SilentlyContinue)) {
             throw "Module loaded but missing function: $c (from $FileName)"
         }
+    }
+    
+    # Log successful load
+    if (Get-Command Write-SecurityLog -ErrorAction SilentlyContinue) {
+        Write-SecurityLog -EventType Load -Message "Module loaded successfully" -Details "$FileName (Functions: $($RequiredCommands -join ', '))"
     }
 }
 
