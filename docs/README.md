@@ -9,4 +9,6 @@ This directory contains general documentation for the WorkApp hub.
 - Best practices
 - Architecture notes
 
-_Documentation will be added as the hub grows._
+## Module Documentation
+
+- [Diagnostics and Repair](DiagnosticsAndRepair.md) - Star Trek-themed network diagnostics and system repair tools
