@@ -1,0 +1,7 @@
+Theme Guidelines
+
+- Background: Near-black deep-space theme.
+- Panels: Rounded capsule-style with 10–25% translucent black glass effect.
+- Actions: Teal glow for primary buttons; red accents for stale/urgent items.
+- Fonts: Modern sans-serif for text, monospace for script viewer.
+- Layout: Fixed desktop-first layout at a 16:9 aspect ratio (1080p resolution).

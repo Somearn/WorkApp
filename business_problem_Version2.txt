@@ -1,0 +1,3 @@
+Business Problem
+
+Operators need a unified, read-only knowledge hub to triage operational issues efficiently. The solution should centralize site information, contact data, troubleshooting guides, and scripts without logging or ticketing. The app must use a starship cockpit theme, with manual refresh controls and a focus on desktop usability (16:9 aspect ratio). Administrators require secured Edit Mode for data verification and updates.

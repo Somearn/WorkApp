@@ -1,0 +1,16 @@
+User Flows
+
+Operator Flows
+- Access read-only records for site information, contacts, troubleshooting guides, and scripts.
+- Use global search functions with power filters (e.g., type:site, tag:<value>, supports:<value>).
+- Copy to clipboard for manual use via Copy Kits integrated with all data views.
+- Refresh SharePoint data manually to ensure accuracy.
+- View urgent triage-dashboard indicators (e.g., Cert Expired, Site Down).
+
+---
+
+Administrator Flows
+- Toggle Edit Mode explicitly to update stale entries (e.g., "Last Verified").
+- Categorize data using pre-defined tags for optimized filtering.
+- Ensure all edits are verified to maintain data integrity.
+- Manage scripts by category and shell type while maintaining read-only defaults for all operators.

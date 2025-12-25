@@ -1,0 +1,12 @@
+Hard Constraints
+
+- NO automated flows, NO logging, NO ticketing, and NO runbooks.
+- Manual-only refresh for SharePoint content.
+- Desktop-first layout: Fixed 16:9 at 1080p resolution.
+- Scripts are display-only (copy-ready, never executable).
+- App defaults to read-only. Edit Mode requires explicit toggle.
+- App must support three Dataverse tables:
+
+  1. OpsKnowledgeHQ
+  2. OpsOncallExports
+  3. OpsCommands

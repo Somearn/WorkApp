@@ -1,0 +1,33 @@
+Data Models
+
+OpsKnowledgeHQ
+Purpose: Unified knowledge store for sites, phones, nodes, troubleshooting, references, and operator notes.
+
+Fields:
+- Common Fields: Title, RecordType (choice: Site, Phone, Node, etc.), Tags, Summary, Details, Links, OwnerTeam, IsPinned, IsActive, LastVerified, UpdatedByDisplay.
+- Site-Specific: SiteCode, SiteName, Address, City, State, Zip, CircuitId, SiteAffiliate, SiteNotes.
+- Phone-Specific: ContactName, Department, Role, IvantiPhonePrimary, IvantiPhoneSecondary, StaffDirectoryPhone, OtherContactLabel, OtherContactPhone, Email, AfterHoursNotes.
+- Node-Specific: AppGroup, NodeHostname, NodeIPAddress, NodeRole, NodeEnvironment, NodeOwnerTeam.
+
+---
+
+OpsOncallExports
+Purpose: Track on-call schedules and roles for triage.
+
+Fields:
+- OnCallRole, PrimaryName, PrimaryPhone, SecondaryName, SecondaryPhone.
+- CoverageNotes, SharedNotes, Tags, IsActive, LastVerified, UpdatedByDisplay.
+
+Constraints:
+Records are read-only with manual refresh to ensure updated schedules.
+
+---
+
+OpsCommands
+Purpose: Repository for categorized CMD/PowerShell scripts for manual operator use.
+
+Fields:
+- ScriptName, ScriptText, ShellType (CMD or PowerShell), Category, Tags, Summary, ModifiedDate, UpdatedByDisplay.
+
+Constraints:
+Scripts are copy-to-clipboard and display-only (not executable). Categorized for quick operator access.
