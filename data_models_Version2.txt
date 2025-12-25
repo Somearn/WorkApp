@@ -1,33 +1,46 @@
-Data Models
-
 OpsKnowledgeHQ
-Purpose: Unified knowledge store for sites, phones, nodes, troubleshooting, references, and operator notes.
+Purpose:
+A centralized knowledge store for sites, phones, nodes, troubleshooting procedures, references, and operator notes.
 
 Fields:
-- Common Fields: Title, RecordType (choice: Site, Phone, Node, etc.), Tags, Summary, Details, Links, OwnerTeam, IsPinned, IsActive, LastVerified, UpdatedByDisplay.
-- Site-Specific: SiteCode, SiteName, Address, City, State, Zip, CircuitId, SiteAffiliate, SiteNotes.
-- Phone-Specific: ContactName, Department, Role, IvantiPhonePrimary, IvantiPhoneSecondary, StaffDirectoryPhone, OtherContactLabel, OtherContactPhone, Email, AfterHoursNotes.
-- Node-Specific: AppGroup, NodeHostname, NodeIPAddress, NodeRole, NodeEnvironment, NodeOwnerTeam.
 
----
-
+Common Fields:
+Title, RecordType (choice: Site, Phone, Node, etc.), Tags, Summary, Details, Links, OwnerTeam, IsPinned, IsActive, LastVerified, UpdatedByDisplay.
+Site-Specific:
+SiteCode, SiteName, Address, City, State, Zip, CircuitId, SiteAffiliate, SiteNotes.
+Phone-Specific:
+ContactName, Department, Role, IvantiPhonePrimary, IvantiPhoneSecondary, StaffDirectoryPhone, OtherContactLabel, OtherContactPhone, Email, AfterHoursNotes.
+Node-Specific:
+AppGroup, NodeHostname, NodeIPAddress, NodeRole, NodeEnvironment, NodeOwnerTeam.
 OpsOncallExports
-Purpose: Track on-call schedules and roles for triage.
+Purpose:
+Tracks on-call schedules and roles for triage operations with functionality to replace all on-call information via Excel import.
 
 Fields:
-- OnCallRole, PrimaryName, PrimaryPhone, SecondaryName, SecondaryPhone.
-- CoverageNotes, SharedNotes, Tags, IsActive, LastVerified, UpdatedByDisplay.
 
+OnCallRole, PrimaryName, PrimaryPhone, SecondaryName, SecondaryPhone.
+CoverageNotes, SharedNotes, Tags, IsActive, LastVerified, UpdatedByDisplay.
 Constraints:
-Records are read-only with manual refresh to ensure updated schedules.
 
----
+Records are read-only with manual refresh to ensure up-to-date schedules.
+Includes an Update Button:
+Function: Replaces all on-call information via Excel import.
+Import Excel Fields:
+Primary, Primary Phone, Backup, Backup Phone, Manager, Director, VP, StartDate, EndDate.
+Features:
 
+Ensures administrators can update schedules in bulk, avoiding manual entry.
 OpsCommands
-Purpose: Repository for categorized CMD/PowerShell scripts for manual operator use.
+Purpose:
+A repository for categorized CMD/PowerShell scripts for manual operator usage.
 
 Fields:
-- ScriptName, ScriptText, ShellType (CMD or PowerShell), Category, Tags, Summary, ModifiedDate, UpdatedByDisplay.
 
+ScriptName, ScriptText, ShellType (CMD or PowerShell), Category, Tags, Summary, ModifiedDate, UpdatedByDisplay.
 Constraints:
-Scripts are copy-to-clipboard and display-only (not executable). Categorized for quick operator access.
+
+Scripts are copy-to-clipboard and display-only (not executable).
+Categorized for structured access by operators.
+Features:
+
+Built-in copy functionality for rapid sharing and execution outside the app.
