@@ -1,16 +1,56 @@
 User Flows
 
 Operator Flows
-- Access read-only records for site information, contacts, troubleshooting guides, and scripts.
-- Use global search functions with power filters (e.g., type:site, tag:<value>, supports:<value>).
-- Copy to clipboard for manual use via Copy Kits integrated with all data views.
-- Refresh SharePoint data manually to ensure accuracy.
-- View urgent triage-dashboard indicators (e.g., Cert Expired, Site Down).
+Operators interact with the app in a read-only mode, focusing on efficient triage and retrieval of information. The following tasks define their workflow:
 
----
+Access Read-Only Records:
 
+View site information, contact data, troubleshooting guides, and scripts in a unified, centralized interface.
+All records are defaulted to read-only mode, ensuring operators cannot modify data.
+Global Search & Power Filters:
+
+Perform quick searches across all records using intuitive filters such as:
+type:<site/phone/node>: Filter records by data type.
+tag:<value>: Search based on applied metadata tags.
+supports:<value>: Locate records supporting a particular category or query.
+Copy-to-Clipboard Integration:
+
+Copy CMD/PowerShell scripts and other relevant data directly using Copy Kits integrated with each viewable record.
+This feature ensures rapid operator execution of scripts in external tools without in-app execution.
+Manual Refresh for SharePoint Data:
+
+Operators use manual refresh buttons to retrieve the latest updates from connected SharePoint sources and replace outdated entries.
+This feature avoids automated flows and maintains controlled updates.
+Urgency Indicators in Triage Dashboard:
+
+Operators view indicators for stale or urgent issues (e.g., expired certifications or downed sites):
+Cert Expired: Highlighted with red glow or urgency markers.
+Site Down: Display status indicating critical scenarios requiring immediate action.
 Administrator Flows
-- Toggle Edit Mode explicitly to update stale entries (e.g., "Last Verified").
-- Categorize data using pre-defined tags for optimized filtering.
-- Ensure all edits are verified to maintain data integrity.
-- Manage scripts by category and shell type while maintaining read-only defaults for all operators.
+Administrators interact with the app using Edit Mode, allowing secure access for record management. Their workflow includes:
+
+Toggle Secure Edit Mode:
+
+Explicitly toggle into Edit Mode to modify records flagged as stale (e.g., update "Last Verified").
+By default, administrators operate in read-only mode until switching to Edit Mode to prevent accidental edits.
+Categorization with Pre-Defined Tags:
+
+Manage data categorization by applying pre-defined tags, improving the efficiency and accuracy of operator searches.
+Tags are structured based on operational attributes (e.g., tags for "urgent", "high-frequency").
+Verify and Update Records:
+
+Ensure all edits are manually verified and saved, maintaining data integrity for operators reliant on accurate information.
+Update critical fields such as verification timestamps (Last Verified) or override stale entries flagged in the dashboard.
+Manage CMD/PowerShell Scripts:
+
+Administrators can organize scripts into distinct categories (e.g., troubleshooting, diagnostics) and specify shell types (CMD vs. PowerShell).
+Scripts remain read-only for operators, with modifications limited to administrators in Edit Mode.
+Workflow Enhancements
+Operator Flow Clarity:
+
+Define specific filters, tools (e.g., Copy Kits), and dashboard use cases for operational efficiency.
+Reinforce manual-only updates and structured triage processes.
+Administrator Control:
+
+Secure editing workflow eliminates risks of unauthorized changes.
+Data verification ensures continued reliability for operator use.
