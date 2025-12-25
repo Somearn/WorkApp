@@ -1,7 +1,5 @@
-Copilot said: Here’s an **enhanced version** with precise requirements
-Here’s an enhanced version with precise requirements and definitions to ensure Copilot can fully understand and implement your needs:
-
 Data Models
+
 OpsKnowledgeHQ
 Purpose:
 A centralized, read-only knowledge store for operational data including sites, phones, nodes, troubleshooting procedures, references, and operator notes. This table must support comprehensive filtering and search functionality.
