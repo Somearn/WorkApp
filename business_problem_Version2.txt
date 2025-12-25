@@ -1,3 +1,31 @@
 Business Problem
 
-Operators need a unified, read-only knowledge hub to triage operational issues efficiently. The solution should centralize site information, contact data, troubleshooting guides, and scripts without logging or ticketing. The app must use a starship cockpit theme, with manual refresh controls and a focus on desktop usability (16:9 aspect ratio). Administrators require secured Edit Mode for data verification and updates.
+Operators require a centralized, read-only knowledge hub to triage operational issues quickly and efficiently. The app should address the following criteria:
+
+Functional Requirements:
+
+Data Centralization: Consolidate site information, contact data, troubleshooting guides, and command-line scripts into one unified interface.
+Manual Refresh for Accuracy: Provide manual controls to refresh external data sources (e.g., SharePoint content, on-call exports) for ensuring up-to-date information.
+Streamlined Access: Enable operators to easily search, filter, and retrieve records for rapid triage.
+Operational Constraints:
+
+Read-Only Mode: The app must default to read-only mode for operator use, preventing accidental data modification.
+Secure Edit Mode: Administrators should be able to toggle into Edit Mode for verifying and updating stale or inaccurate records.
+No Automated Workflows: The solution must avoid automation such as logging, flows, ticketing, or self-executing scripts.
+UI Design and Usability:
+
+Starship Cockpit Theme: A futuristic UI design based on a starship glass-cockpit aesthetic, reinforcing engagement and immersion.
+Desktop-First Layout: Optimize for desktop usage, with fixed dimensions designed for 16:9 aspect ratio (1920x1080 resolution).
+Specific Features:
+
+Copy-to-Clipboard Functionality: Enable operators to manually copy CMD/PowerShell scripts or data directly from the app.
+Urgency Indicators: Highlight stale or critical triage data visually (e.g., red glow for expired certifications).
+Key Role Breakdown
+Operators:
+
+Access a clean, unified knowledge base containing filtered and categorized data.
+Engage with troubleshooting guides, scripts, and contacts without modifying primary records.
+Administrators:
+
+Access Edit Mode for securely verifying and managing records.
+Update stale entries using dedicated controls (e.g., Last Verified date).
