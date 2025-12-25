@@ -1,7 +1,5 @@
-Copilot said: Here’s a **more detailed Theme Guidelines** draft
-Here’s a more detailed Theme Guidelines draft to ensure Copilot fully understands the design elements and implementation requirements. The descriptions are enhanced with added precision and context:
+Theme Guidelines
 
-Enhanced Theme Guidelines
 Background
 Utilize a near-black deep-space theme, with subtle gradients or texture resembling a star-filled night sky.
 Consider incorporating dim star clusters, faint nebula effects, or soft light flares to reinforce the starship cockpit ambiance.
