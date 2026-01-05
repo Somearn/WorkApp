@@ -22,7 +22,7 @@ function Get-T2Credentials {
     
     $credForm = New-Object System.Windows.Forms.Form
     $credForm.Text = "Enter T2 Credentials"
-    $credForm.Size = New-Object System.Drawing.Size(500, 240)
+    $credForm.ClientSize = New-Object System.Drawing.Size(500, 240)
     $credForm.StartPosition = "CenterParent"
     $credForm.BackColor = [System.Drawing.Color]::FromArgb(33, 33, 33)
     $credForm.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
@@ -34,7 +34,7 @@ function Get-T2Credentials {
     $lblInfo.Location = New-Object System.Drawing.Point(20, 10)
     $lblInfo.Size = New-Object System.Drawing.Size(450, 20)
     $lblInfo.ForeColor = [System.Drawing.Color]::FromArgb(0, 178, 255)
-    $lblInfo.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+    $lblInfo.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
     $credForm.Controls.Add($lblInfo)
     
     $lblUser = New-Object System.Windows.Forms.Label
@@ -71,7 +71,7 @@ function Get-T2Credentials {
     $lblNote.Location = New-Object System.Drawing.Point(20, 115)
     $lblNote.Size = New-Object System.Drawing.Size(450, 30)
     $lblNote.ForeColor = [System.Drawing.Color]::FromArgb(192, 192, 192)
-    $lblNote.Font = New-Object System.Drawing.Font("Segoe UI", 8)
+    $lblNote.Font = New-Object System.Drawing.Font("Segoe UI", 10)
     $credForm.Controls.Add($lblNote)
     
     $btnOK = New-Object System.Windows.Forms.Button
@@ -81,7 +81,7 @@ function Get-T2Credentials {
     $btnOK.BackColor = [System.Drawing.Color]::FromArgb(0, 178, 255)
     $btnOK.ForeColor = [System.Drawing.Color]::White
     $btnOK.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-    $btnOK.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+    $btnOK.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
     $btnOK.DialogResult = [System.Windows.Forms.DialogResult]::OK
     $credForm.Controls.Add($btnOK)
     
@@ -92,7 +92,7 @@ function Get-T2Credentials {
     $btnCancel.BackColor = [System.Drawing.Color]::FromArgb(80, 80, 80)
     $btnCancel.ForeColor = [System.Drawing.Color]::White
     $btnCancel.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-    $btnCancel.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+    $btnCancel.Font = New-Object System.Drawing.Font("Segoe UI", 12)
     $btnCancel.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
     $credForm.Controls.Add($btnCancel)
     
@@ -132,7 +132,7 @@ function Write-OutputSafe {
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Network Management Tool - Healthcare IT Operations Console"
-$form.Size = New-Object System.Drawing.Size(1920, 1080)
+$form.ClientSize = New-Object System.Drawing.Size(1920, 1080)
 $form.StartPosition = "CenterScreen"
 $form.BackColor = [System.Drawing.Color]::FromArgb(15, 15, 15)
 $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
@@ -150,10 +150,10 @@ $yellow = [System.Drawing.Color]::FromArgb(255, 193, 7)
 $green = [System.Drawing.Color]::FromArgb(76, 175, 80)
 
 # Fonts
-$generalFont = New-Object System.Drawing.Font("Segoe UI", 10)
-$titleFont = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
-$monoFont = New-Object System.Drawing.Font("Consolas", 9)
-$smallFont = New-Object System.Drawing.Font("Segoe UI", 9)
+$generalFont = New-Object System.Drawing.Font("Segoe UI", 12)
+$titleFont = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
+$monoFont = New-Object System.Drawing.Font("Consolas", 12)
+$smallFont = New-Object System.Drawing.Font("Segoe UI", 11)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # HEADER - GLOBAL TARGET HOST & CREDENTIALS
@@ -183,7 +183,7 @@ $txtGlobalHost.Location = New-Object System.Drawing.Point(760, 13)
 $txtGlobalHost.Size = New-Object System.Drawing.Size(350, 25)
 $txtGlobalHost.BackColor = $darkGray
 $txtGlobalHost.ForeColor = $teal
-$txtGlobalHost.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
+$txtGlobalHost.Font = New-Object System.Drawing.Font("Segoe UI", 13, [System.Drawing.FontStyle]::Bold)
 $txtGlobalHost.Text = "localhost"
 $txtGlobalHost.Add_TextChanged({
     $script:globalTargetHost = $txtGlobalHost.Text
@@ -238,24 +238,71 @@ $btnClearCred.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB CONTROL
+# LEFT NAVIGATION PANEL
 # ═══════════════════════════════════════════════════════════════════════════════
 
-$tabControl = New-Object System.Windows.Forms.TabControl
-$tabControl.Location = New-Object System.Drawing.Point(20, 55)
-$tabControl.Size = New-Object System.Drawing.Size(1860, 980)
-$tabControl.Font = $generalFont
-$tabControl.BackColor = $darkGray
-$tabControl.ForeColor = $textColor
-$form.Controls.Add($tabControl)
+$navPanel = New-Object System.Windows.Forms.Panel
+$navPanel.Location = New-Object System.Drawing.Point(20, 55)
+$navPanel.Size = New-Object System.Drawing.Size(250, 980)
+$navPanel.BackColor = $darkGray
+$navPanel.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
+$form.Controls.Add($navPanel)
+
+$navLabel = New-Object System.Windows.Forms.Label
+$navLabel.Text = "TOOLS"
+$navLabel.Location = New-Object System.Drawing.Point(10, 10)
+$navLabel.Size = New-Object System.Drawing.Size(230, 30)
+$navLabel.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
+$navLabel.ForeColor = $teal
+$navLabel.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+$navPanel.Controls.Add($navLabel)
+
+$navListBox = New-Object System.Windows.Forms.ListBox
+$navListBox.Location = New-Object System.Drawing.Point(10, 50)
+$navListBox.Size = New-Object System.Drawing.Size(230, 920)
+$navListBox.BackColor = $nearBlack
+$navListBox.ForeColor = $textColor
+$navListBox.Font = $generalFont
+$navListBox.BorderStyle = [System.Windows.Forms.BorderStyle]::None
+$navListBox.Items.AddRange(@(
+    "📊 Node Summary",
+    "❤ Node Health",
+    "📡 Ping Test",
+    "🔍 NSLookup",
+    "🗺 Traceroute",
+    "👥 Domain Users",
+    "🌐 IPConfig",
+    "📈 NetStat",
+    "🖥 RDP",
+    "🔧 PuTTY SSH",
+    "🔄 Server Reboot",
+    "🔒 Certificates",
+    "🛡 ThreatLocker",
+    "⚙ Services"
+))
+$navListBox.SelectedIndex = 0
+$navPanel.Controls.Add($navListBox)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 1: NODE SUMMARY - System information and network configuration
+# MAIN CONTENT PANEL
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabNodeSummary = New-Object System.Windows.Forms.TabPage
-$tabNodeSummary.Text = "📊 Node Summary"
-$tabNodeSummary.BackColor = $nearBlack
-$tabControl.Controls.Add($tabNodeSummary)
+
+$contentPanel = New-Object System.Windows.Forms.Panel
+$contentPanel.Location = New-Object System.Drawing.Point(280, 55)
+$contentPanel.Size = New-Object System.Drawing.Size(1610, 980)
+$contentPanel.BackColor = $nearBlack
+$contentPanel.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
+$form.Controls.Add($contentPanel)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PANEL 1: NODE SUMMARY - System information and network configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+$panelNodeSummary = New-Object System.Windows.Forms.Panel
+$panelNodeSummary.Location = New-Object System.Drawing.Point(0, 0)
+$panelNodeSummary.Size = New-Object System.Drawing.Size(1610, 980)
+$panelNodeSummary.BackColor = $nearBlack
+$panelNodeSummary.Visible = $true
+$contentPanel.Controls.Add($panelNodeSummary)
 
 $btnGetNodeInfo = New-Object System.Windows.Forms.Button
 $btnGetNodeInfo.Text = "🔍 Get Node Summary"
@@ -267,7 +314,7 @@ $btnGetNodeInfo.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnGetNodeInfo.FlatAppearance.BorderColor = $teal
 $btnGetNodeInfo.FlatAppearance.BorderSize = 2
 $btnGetNodeInfo.Font = $generalFont
-$tabNodeSummary.Controls.Add($btnGetNodeInfo)
+$panelNodeSummary.Controls.Add($btnGetNodeInfo)
 
 $btnClearNodeInfo = New-Object System.Windows.Forms.Button
 $btnClearNodeInfo.Text = "🗑 Clear"
@@ -278,18 +325,18 @@ $btnClearNodeInfo.ForeColor = $silver
 $btnClearNodeInfo.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearNodeInfo.FlatAppearance.BorderColor = $silver
 $btnClearNodeInfo.Font = $generalFont
-$tabNodeSummary.Controls.Add($btnClearNodeInfo)
+$panelNodeSummary.Controls.Add($btnClearNodeInfo)
 
 $txtNodeInfo = New-Object System.Windows.Forms.TextBox
 $txtNodeInfo.Location = New-Object System.Drawing.Point(20, 70)
-$txtNodeInfo.Size = New-Object System.Drawing.Size(1800, 870)
+$txtNodeInfo.Size = New-Object System.Drawing.Size(1550, 870)
 $txtNodeInfo.Multiline = $true
 $txtNodeInfo.ScrollBars = "Vertical"
 $txtNodeInfo.BackColor = $darkGray
 $txtNodeInfo.ForeColor = $textColor
 $txtNodeInfo.Font = $monoFont
 $txtNodeInfo.ReadOnly = $true
-$tabNodeSummary.Controls.Add($txtNodeInfo)
+$panelNodeSummary.Controls.Add($txtNodeInfo)
 
 $btnGetNodeInfo.Add_Click({
     $targetHost = $script:globalTargetHost
@@ -447,12 +494,14 @@ $btnClearNodeInfo.Add_Click({
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 2: NODE HEALTH CHECK - Quick health diagnostics
+# PANEL 2: NODE HEALTH CHECK - Quick health diagnostics
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabNodeHealth = New-Object System.Windows.Forms.TabPage
-$tabNodeHealth.Text = "❤ Node Health"
-$tabNodeHealth.BackColor = $nearBlack
-$tabControl.Controls.Add($tabNodeHealth)
+$panelNodeHealth = New-Object System.Windows.Forms.Panel
+$panelNodeHealth.Location = New-Object System.Drawing.Point(0, 0)
+$panelNodeHealth.Size = New-Object System.Drawing.Size(1610, 980)
+$panelNodeHealth.BackColor = $nearBlack
+$panelNodeHealth.Visible = $false
+$contentPanel.Controls.Add($panelNodeHealth)
 
 $btnCheckHealth = New-Object System.Windows.Forms.Button
 $btnCheckHealth.Text = "🏥 Check Node Health"
@@ -464,7 +513,7 @@ $btnCheckHealth.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnCheckHealth.FlatAppearance.BorderColor = $teal
 $btnCheckHealth.FlatAppearance.BorderSize = 2
 $btnCheckHealth.Font = $generalFont
-$tabNodeHealth.Controls.Add($btnCheckHealth)
+$panelNodeHealth.Controls.Add($btnCheckHealth)
 
 $btnClearHealth = New-Object System.Windows.Forms.Button
 $btnClearHealth.Text = "🗑 Clear"
@@ -475,18 +524,18 @@ $btnClearHealth.ForeColor = $silver
 $btnClearHealth.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearHealth.FlatAppearance.BorderColor = $silver
 $btnClearHealth.Font = $generalFont
-$tabNodeHealth.Controls.Add($btnClearHealth)
+$panelNodeHealth.Controls.Add($btnClearHealth)
 
 $txtHealthOutput = New-Object System.Windows.Forms.TextBox
 $txtHealthOutput.Location = New-Object System.Drawing.Point(20, 70)
-$txtHealthOutput.Size = New-Object System.Drawing.Size(1800, 870)
+$txtHealthOutput.Size = New-Object System.Drawing.Size(1550, 870)
 $txtHealthOutput.Multiline = $true
 $txtHealthOutput.ScrollBars = "Vertical"
 $txtHealthOutput.BackColor = $darkGray
 $txtHealthOutput.ForeColor = $textColor
 $txtHealthOutput.Font = $monoFont
 $txtHealthOutput.ReadOnly = $true
-$tabNodeHealth.Controls.Add($txtHealthOutput)
+$panelNodeHealth.Controls.Add($txtHealthOutput)
 
 $btnCheckHealth.Add_Click({
     $targetHost = $script:globalTargetHost
@@ -660,12 +709,14 @@ $btnClearHealth.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 3: PING TEST - Network reachability testing (on-demand only)
+# PANEL 3: PING TEST - Network reachability testing (on-demand only)
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabPing = New-Object System.Windows.Forms.TabPage
-$tabPing.Text = "📡 Ping Test"
-$tabPing.BackColor = $nearBlack
-$tabControl.Controls.Add($tabPing)
+$panelPing = New-Object System.Windows.Forms.Panel
+$panelPing.Location = New-Object System.Drawing.Point(0, 0)
+$panelPing.Size = New-Object System.Drawing.Size(1610, 980)
+$panelPing.BackColor = $nearBlack
+$panelPing.Visible = $false
+$contentPanel.Controls.Add($panelPing)
 
 $lblPingTarget = New-Object System.Windows.Forms.Label
 $lblPingTarget.Text = "Target (uses global host if empty):"
@@ -673,7 +724,7 @@ $lblPingTarget.Location = New-Object System.Drawing.Point(20, 25)
 $lblPingTarget.Size = New-Object System.Drawing.Size(250, 25)
 $lblPingTarget.ForeColor = $textColor
 $lblPingTarget.Font = $generalFont
-$tabPing.Controls.Add($lblPingTarget)
+$panelPing.Controls.Add($lblPingTarget)
 
 $txtPingTarget = New-Object System.Windows.Forms.TextBox
 $txtPingTarget.Location = New-Object System.Drawing.Point(280, 22)
@@ -681,7 +732,7 @@ $txtPingTarget.Size = New-Object System.Drawing.Size(300, 25)
 $txtPingTarget.BackColor = $darkGray
 $txtPingTarget.ForeColor = $textColor
 $txtPingTarget.Font = $generalFont
-$tabPing.Controls.Add($txtPingTarget)
+$panelPing.Controls.Add($txtPingTarget)
 
 $lblPingCount = New-Object System.Windows.Forms.Label
 $lblPingCount.Text = "Count:"
@@ -689,7 +740,7 @@ $lblPingCount.Location = New-Object System.Drawing.Point(600, 25)
 $lblPingCount.Size = New-Object System.Drawing.Size(60, 25)
 $lblPingCount.ForeColor = $textColor
 $lblPingCount.Font = $generalFont
-$tabPing.Controls.Add($lblPingCount)
+$panelPing.Controls.Add($lblPingCount)
 
 $txtPingCount = New-Object System.Windows.Forms.TextBox
 $txtPingCount.Location = New-Object System.Drawing.Point(670, 22)
@@ -698,7 +749,7 @@ $txtPingCount.BackColor = $darkGray
 $txtPingCount.ForeColor = $textColor
 $txtPingCount.Font = $generalFont
 $txtPingCount.Text = "4"
-$tabPing.Controls.Add($txtPingCount)
+$panelPing.Controls.Add($txtPingCount)
 
 $btnPing = New-Object System.Windows.Forms.Button
 $btnPing.Text = "▶ Ping"
@@ -710,7 +761,7 @@ $btnPing.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnPing.FlatAppearance.BorderColor = $teal
 $btnPing.FlatAppearance.BorderSize = 2
 $btnPing.Font = $generalFont
-$tabPing.Controls.Add($btnPing)
+$panelPing.Controls.Add($btnPing)
 
 $btnClearPing = New-Object System.Windows.Forms.Button
 $btnClearPing.Text = "🗑 Clear"
@@ -721,18 +772,18 @@ $btnClearPing.ForeColor = $silver
 $btnClearPing.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearPing.FlatAppearance.BorderColor = $silver
 $btnClearPing.Font = $generalFont
-$tabPing.Controls.Add($btnClearPing)
+$panelPing.Controls.Add($btnClearPing)
 
 $txtPingOutput = New-Object System.Windows.Forms.TextBox
 $txtPingOutput.Location = New-Object System.Drawing.Point(20, 70)
-$txtPingOutput.Size = New-Object System.Drawing.Size(1800, 870)
+$txtPingOutput.Size = New-Object System.Drawing.Size(1550, 870)
 $txtPingOutput.Multiline = $true
 $txtPingOutput.ScrollBars = "Vertical"
 $txtPingOutput.BackColor = $darkGray
 $txtPingOutput.ForeColor = $textColor
 $txtPingOutput.Font = $monoFont
 $txtPingOutput.ReadOnly = $true
-$tabPing.Controls.Add($txtPingOutput)
+$panelPing.Controls.Add($txtPingOutput)
 
 $btnPing.Add_Click({
     $target = if ([string]::IsNullOrWhiteSpace($txtPingTarget.Text)) { $script:globalTargetHost } else { $txtPingTarget.Text }
@@ -802,12 +853,14 @@ $btnClearPing.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 4: NSLOOKUP - DNS resolution tool
+# PANEL 4: NSLOOKUP - DNS resolution tool
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabNSLookup = New-Object System.Windows.Forms.TabPage
-$tabNSLookup.Text = "🔍 NSLookup"
-$tabNSLookup.BackColor = $nearBlack
-$tabControl.Controls.Add($tabNSLookup)
+$panelNSLookup = New-Object System.Windows.Forms.Panel
+$panelNSLookup.Location = New-Object System.Drawing.Point(0, 0)
+$panelNSLookup.Size = New-Object System.Drawing.Size(1610, 980)
+$panelNSLookup.BackColor = $nearBlack
+$panelNSLookup.Visible = $false
+$contentPanel.Controls.Add($panelNSLookup)
 
 $lblNSTarget = New-Object System.Windows.Forms.Label
 $lblNSTarget.Text = "Domain/IP:"
@@ -815,7 +868,7 @@ $lblNSTarget.Location = New-Object System.Drawing.Point(20, 25)
 $lblNSTarget.Size = New-Object System.Drawing.Size(100, 25)
 $lblNSTarget.ForeColor = $textColor
 $lblNSTarget.Font = $generalFont
-$tabNSLookup.Controls.Add($lblNSTarget)
+$panelNSLookup.Controls.Add($lblNSTarget)
 
 $txtNSTarget = New-Object System.Windows.Forms.TextBox
 $txtNSTarget.Location = New-Object System.Drawing.Point(130, 22)
@@ -823,7 +876,7 @@ $txtNSTarget.Size = New-Object System.Drawing.Size(400, 25)
 $txtNSTarget.BackColor = $darkGray
 $txtNSTarget.ForeColor = $textColor
 $txtNSTarget.Font = $generalFont
-$tabNSLookup.Controls.Add($txtNSTarget)
+$panelNSLookup.Controls.Add($txtNSTarget)
 
 $btnNSLookup = New-Object System.Windows.Forms.Button
 $btnNSLookup.Text = "▶ Lookup"
@@ -835,7 +888,7 @@ $btnNSLookup.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnNSLookup.FlatAppearance.BorderColor = $teal
 $btnNSLookup.FlatAppearance.BorderSize = 2
 $btnNSLookup.Font = $generalFont
-$tabNSLookup.Controls.Add($btnNSLookup)
+$panelNSLookup.Controls.Add($btnNSLookup)
 
 $btnClearNS = New-Object System.Windows.Forms.Button
 $btnClearNS.Text = "🗑 Clear"
@@ -846,18 +899,18 @@ $btnClearNS.ForeColor = $silver
 $btnClearNS.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearNS.FlatAppearance.BorderColor = $silver
 $btnClearNS.Font = $generalFont
-$tabNSLookup.Controls.Add($btnClearNS)
+$panelNSLookup.Controls.Add($btnClearNS)
 
 $txtNSOutput = New-Object System.Windows.Forms.TextBox
 $txtNSOutput.Location = New-Object System.Drawing.Point(20, 70)
-$txtNSOutput.Size = New-Object System.Drawing.Size(1800, 870)
+$txtNSOutput.Size = New-Object System.Drawing.Size(1550, 870)
 $txtNSOutput.Multiline = $true
 $txtNSOutput.ScrollBars = "Vertical"
 $txtNSOutput.BackColor = $darkGray
 $txtNSOutput.ForeColor = $textColor
 $txtNSOutput.Font = $monoFont
 $txtNSOutput.ReadOnly = $true
-$tabNSLookup.Controls.Add($txtNSOutput)
+$panelNSLookup.Controls.Add($txtNSOutput)
 
 $btnNSLookup.Add_Click({
     $target = $txtNSTarget.Text.Trim()
@@ -905,12 +958,14 @@ $btnClearNS.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 5: TRACEROUTE - Network path tracing
+# PANEL 5: TRACEROUTE - Network path tracing
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabTraceroute = New-Object System.Windows.Forms.TabPage
-$tabTraceroute.Text = "🗺 Traceroute"
-$tabTraceroute.BackColor = $nearBlack
-$tabControl.Controls.Add($tabTraceroute)
+$panelTraceroute = New-Object System.Windows.Forms.Panel
+$panelTraceroute.Location = New-Object System.Drawing.Point(0, 0)
+$panelTraceroute.Size = New-Object System.Drawing.Size(1610, 980)
+$panelTraceroute.BackColor = $nearBlack
+$panelTraceroute.Visible = $false
+$contentPanel.Controls.Add($panelTraceroute)
 
 $lblTraceTarget = New-Object System.Windows.Forms.Label
 $lblTraceTarget.Text = "Target:"
@@ -918,7 +973,7 @@ $lblTraceTarget.Location = New-Object System.Drawing.Point(20, 25)
 $lblTraceTarget.Size = New-Object System.Drawing.Size(100, 25)
 $lblTraceTarget.ForeColor = $textColor
 $lblTraceTarget.Font = $generalFont
-$tabTraceroute.Controls.Add($lblTraceTarget)
+$panelTraceroute.Controls.Add($lblTraceTarget)
 
 $txtTraceTarget = New-Object System.Windows.Forms.TextBox
 $txtTraceTarget.Location = New-Object System.Drawing.Point(130, 22)
@@ -926,7 +981,7 @@ $txtTraceTarget.Size = New-Object System.Drawing.Size(400, 25)
 $txtTraceTarget.BackColor = $darkGray
 $txtTraceTarget.ForeColor = $textColor
 $txtTraceTarget.Font = $generalFont
-$tabTraceroute.Controls.Add($txtTraceTarget)
+$panelTraceroute.Controls.Add($txtTraceTarget)
 
 $btnTrace = New-Object System.Windows.Forms.Button
 $btnTrace.Text = "▶ Traceroute"
@@ -938,7 +993,7 @@ $btnTrace.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnTrace.FlatAppearance.BorderColor = $teal
 $btnTrace.FlatAppearance.BorderSize = 2
 $btnTrace.Font = $generalFont
-$tabTraceroute.Controls.Add($btnTrace)
+$panelTraceroute.Controls.Add($btnTrace)
 
 $btnClearTrace = New-Object System.Windows.Forms.Button
 $btnClearTrace.Text = "🗑 Clear"
@@ -949,18 +1004,18 @@ $btnClearTrace.ForeColor = $silver
 $btnClearTrace.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearTrace.FlatAppearance.BorderColor = $silver
 $btnClearTrace.Font = $generalFont
-$tabTraceroute.Controls.Add($btnClearTrace)
+$panelTraceroute.Controls.Add($btnClearTrace)
 
 $txtTraceOutput = New-Object System.Windows.Forms.TextBox
 $txtTraceOutput.Location = New-Object System.Drawing.Point(20, 70)
-$txtTraceOutput.Size = New-Object System.Drawing.Size(1800, 870)
+$txtTraceOutput.Size = New-Object System.Drawing.Size(1550, 870)
 $txtTraceOutput.Multiline = $true
 $txtTraceOutput.ScrollBars = "Vertical"
 $txtTraceOutput.BackColor = $darkGray
 $txtTraceOutput.ForeColor = $textColor
 $txtTraceOutput.Font = $monoFont
 $txtTraceOutput.ReadOnly = $true
-$tabTraceroute.Controls.Add($txtTraceOutput)
+$panelTraceroute.Controls.Add($txtTraceOutput)
 
 $btnTrace.Add_Click({
     $target = if ([string]::IsNullOrWhiteSpace($txtTraceTarget.Text)) { $script:globalTargetHost } else { $txtTraceTarget.Text.Trim() }
@@ -1000,12 +1055,14 @@ $btnClearTrace.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 6: DOMAIN USERS - List domain or local users
+# PANEL 6: DOMAIN USERS - List domain or local users
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabDomainUsers = New-Object System.Windows.Forms.TabPage
-$tabDomainUsers.Text = "👥 Domain Users"
-$tabDomainUsers.BackColor = $nearBlack
-$tabControl.Controls.Add($tabDomainUsers)
+$panelDomainUsers = New-Object System.Windows.Forms.Panel
+$panelDomainUsers.Location = New-Object System.Drawing.Point(0, 0)
+$panelDomainUsers.Size = New-Object System.Drawing.Size(1610, 980)
+$panelDomainUsers.BackColor = $nearBlack
+$panelDomainUsers.Visible = $false
+$contentPanel.Controls.Add($panelDomainUsers)
 
 $btnGetUsers = New-Object System.Windows.Forms.Button
 $btnGetUsers.Text = "👥 Get Domain Users"
@@ -1017,7 +1074,7 @@ $btnGetUsers.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnGetUsers.FlatAppearance.BorderColor = $teal
 $btnGetUsers.FlatAppearance.BorderSize = 2
 $btnGetUsers.Font = $generalFont
-$tabDomainUsers.Controls.Add($btnGetUsers)
+$panelDomainUsers.Controls.Add($btnGetUsers)
 
 $btnGetLocalUsers = New-Object System.Windows.Forms.Button
 $btnGetLocalUsers.Text = "💻 Get Local Users"
@@ -1029,7 +1086,7 @@ $btnGetLocalUsers.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnGetLocalUsers.FlatAppearance.BorderColor = $teal
 $btnGetLocalUsers.FlatAppearance.BorderSize = 2
 $btnGetLocalUsers.Font = $generalFont
-$tabDomainUsers.Controls.Add($btnGetLocalUsers)
+$panelDomainUsers.Controls.Add($btnGetLocalUsers)
 
 $btnClearUsers = New-Object System.Windows.Forms.Button
 $btnClearUsers.Text = "🗑 Clear"
@@ -1040,18 +1097,18 @@ $btnClearUsers.ForeColor = $silver
 $btnClearUsers.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearUsers.FlatAppearance.BorderColor = $silver
 $btnClearUsers.Font = $generalFont
-$tabDomainUsers.Controls.Add($btnClearUsers)
+$panelDomainUsers.Controls.Add($btnClearUsers)
 
 $txtUsersOutput = New-Object System.Windows.Forms.TextBox
 $txtUsersOutput.Location = New-Object System.Drawing.Point(20, 70)
-$txtUsersOutput.Size = New-Object System.Drawing.Size(1800, 870)
+$txtUsersOutput.Size = New-Object System.Drawing.Size(1550, 870)
 $txtUsersOutput.Multiline = $true
 $txtUsersOutput.ScrollBars = "Vertical"
 $txtUsersOutput.BackColor = $darkGray
 $txtUsersOutput.ForeColor = $textColor
 $txtUsersOutput.Font = $monoFont
 $txtUsersOutput.ReadOnly = $true
-$tabDomainUsers.Controls.Add($txtUsersOutput)
+$panelDomainUsers.Controls.Add($txtUsersOutput)
 
 $btnGetUsers.Add_Click({
     $txtUsersOutput.Text = "═══════════════════════════════════════════════════════════════`r`n"
@@ -1136,12 +1193,14 @@ $btnClearUsers.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 7: IPCONFIG - IP configuration and management
+# PANEL 7: IPCONFIG - IP configuration and management
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabIPConfig = New-Object System.Windows.Forms.TabPage
-$tabIPConfig.Text = "🌐 IPConfig"
-$tabIPConfig.BackColor = $nearBlack
-$tabControl.Controls.Add($tabIPConfig)
+$panelIPConfig = New-Object System.Windows.Forms.Panel
+$panelIPConfig.Location = New-Object System.Drawing.Point(0, 0)
+$panelIPConfig.Size = New-Object System.Drawing.Size(1610, 980)
+$panelIPConfig.BackColor = $nearBlack
+$panelIPConfig.Visible = $false
+$contentPanel.Controls.Add($panelIPConfig)
 
 $btnIPConfigAll = New-Object System.Windows.Forms.Button
 $btnIPConfigAll.Text = "📋 IPConfig /all"
@@ -1153,7 +1212,7 @@ $btnIPConfigAll.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnIPConfigAll.FlatAppearance.BorderColor = $teal
 $btnIPConfigAll.FlatAppearance.BorderSize = 2
 $btnIPConfigAll.Font = $generalFont
-$tabIPConfig.Controls.Add($btnIPConfigAll)
+$panelIPConfig.Controls.Add($btnIPConfigAll)
 
 $btnFlushDNS = New-Object System.Windows.Forms.Button
 $btnFlushDNS.Text = "🔄 Flush DNS"
@@ -1165,7 +1224,7 @@ $btnFlushDNS.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnFlushDNS.FlatAppearance.BorderColor = $teal
 $btnFlushDNS.FlatAppearance.BorderSize = 2
 $btnFlushDNS.Font = $generalFont
-$tabIPConfig.Controls.Add($btnFlushDNS)
+$panelIPConfig.Controls.Add($btnFlushDNS)
 
 $btnRenewDHCP = New-Object System.Windows.Forms.Button
 $btnRenewDHCP.Text = "♻ Renew DHCP"
@@ -1177,7 +1236,7 @@ $btnRenewDHCP.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnRenewDHCP.FlatAppearance.BorderColor = $yellow
 $btnRenewDHCP.FlatAppearance.BorderSize = 2
 $btnRenewDHCP.Font = $generalFont
-$tabIPConfig.Controls.Add($btnRenewDHCP)
+$panelIPConfig.Controls.Add($btnRenewDHCP)
 
 $btnClearIPConfig = New-Object System.Windows.Forms.Button
 $btnClearIPConfig.Text = "🗑 Clear"
@@ -1188,18 +1247,18 @@ $btnClearIPConfig.ForeColor = $silver
 $btnClearIPConfig.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearIPConfig.FlatAppearance.BorderColor = $silver
 $btnClearIPConfig.Font = $generalFont
-$tabIPConfig.Controls.Add($btnClearIPConfig)
+$panelIPConfig.Controls.Add($btnClearIPConfig)
 
 $txtIPConfigOutput = New-Object System.Windows.Forms.TextBox
 $txtIPConfigOutput.Location = New-Object System.Drawing.Point(20, 70)
-$txtIPConfigOutput.Size = New-Object System.Drawing.Size(1800, 870)
+$txtIPConfigOutput.Size = New-Object System.Drawing.Size(1550, 870)
 $txtIPConfigOutput.Multiline = $true
 $txtIPConfigOutput.ScrollBars = "Vertical"
 $txtIPConfigOutput.BackColor = $darkGray
 $txtIPConfigOutput.ForeColor = $textColor
 $txtIPConfigOutput.Font = $monoFont
 $txtIPConfigOutput.ReadOnly = $true
-$tabIPConfig.Controls.Add($txtIPConfigOutput)
+$panelIPConfig.Controls.Add($txtIPConfigOutput)
 
 $btnIPConfigAll.Add_Click({
     $txtIPConfigOutput.Text = "═══════════════════════════════════════════════════════════════`r`n"
@@ -1263,12 +1322,14 @@ $btnClearIPConfig.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 8: NETSTAT - Network statistics and connections
+# PANEL 8: NETSTAT - Network statistics and connections
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabNetStat = New-Object System.Windows.Forms.TabPage
-$tabNetStat.Text = "📊 NetStat"
-$tabNetStat.BackColor = $nearBlack
-$tabControl.Controls.Add($tabNetStat)
+$panelNetStat = New-Object System.Windows.Forms.Panel
+$panelNetStat.Location = New-Object System.Drawing.Point(0, 0)
+$panelNetStat.Size = New-Object System.Drawing.Size(1610, 980)
+$panelNetStat.BackColor = $nearBlack
+$panelNetStat.Visible = $false
+$contentPanel.Controls.Add($panelNetStat)
 
 $btnNetStatAll = New-Object System.Windows.Forms.Button
 $btnNetStatAll.Text = "📡 Active Connections"
@@ -1280,7 +1341,7 @@ $btnNetStatAll.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnNetStatAll.FlatAppearance.BorderColor = $teal
 $btnNetStatAll.FlatAppearance.BorderSize = 2
 $btnNetStatAll.Font = $generalFont
-$tabNetStat.Controls.Add($btnNetStatAll)
+$panelNetStat.Controls.Add($btnNetStatAll)
 
 $btnNetStatListening = New-Object System.Windows.Forms.Button
 $btnNetStatListening.Text = "👂 Listening Ports"
@@ -1292,7 +1353,7 @@ $btnNetStatListening.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnNetStatListening.FlatAppearance.BorderColor = $teal
 $btnNetStatListening.FlatAppearance.BorderSize = 2
 $btnNetStatListening.Font = $generalFont
-$tabNetStat.Controls.Add($btnNetStatListening)
+$panelNetStat.Controls.Add($btnNetStatListening)
 
 $btnClearNetStat = New-Object System.Windows.Forms.Button
 $btnClearNetStat.Text = "🗑 Clear"
@@ -1303,18 +1364,18 @@ $btnClearNetStat.ForeColor = $silver
 $btnClearNetStat.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearNetStat.FlatAppearance.BorderColor = $silver
 $btnClearNetStat.Font = $generalFont
-$tabNetStat.Controls.Add($btnClearNetStat)
+$panelNetStat.Controls.Add($btnClearNetStat)
 
 $txtNetStatOutput = New-Object System.Windows.Forms.TextBox
 $txtNetStatOutput.Location = New-Object System.Drawing.Point(20, 70)
-$txtNetStatOutput.Size = New-Object System.Drawing.Size(1800, 870)
+$txtNetStatOutput.Size = New-Object System.Drawing.Size(1550, 870)
 $txtNetStatOutput.Multiline = $true
 $txtNetStatOutput.ScrollBars = "Vertical"
 $txtNetStatOutput.BackColor = $darkGray
 $txtNetStatOutput.ForeColor = $textColor
 $txtNetStatOutput.Font = $monoFont
 $txtNetStatOutput.ReadOnly = $true
-$tabNetStat.Controls.Add($txtNetStatOutput)
+$panelNetStat.Controls.Add($txtNetStatOutput)
 
 $btnNetStatAll.Add_Click({
     $txtNetStatOutput.Text = "═══════════════════════════════════════════════════════════════`r`n"
@@ -1355,12 +1416,14 @@ $btnClearNetStat.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 9: RDP CONNECTION - Remote Desktop with T2 (restrictedAdmin) support
+# PANEL 9: RDP CONNECTION - Remote Desktop with T2 (restrictedAdmin) support
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabRDP = New-Object System.Windows.Forms.TabPage
-$tabRDP.Text = "🖥 RDP"
-$tabRDP.BackColor = $nearBlack
-$tabControl.Controls.Add($tabRDP)
+$panelRDP = New-Object System.Windows.Forms.Panel
+$panelRDP.Location = New-Object System.Drawing.Point(0, 0)
+$panelRDP.Size = New-Object System.Drawing.Size(1610, 980)
+$panelRDP.BackColor = $nearBlack
+$panelRDP.Visible = $false
+$contentPanel.Controls.Add($panelRDP)
 
 $lblRDPHost = New-Object System.Windows.Forms.Label
 $lblRDPHost.Text = "Target Host (uses global if empty):"
@@ -1368,7 +1431,7 @@ $lblRDPHost.Location = New-Object System.Drawing.Point(20, 25)
 $lblRDPHost.Size = New-Object System.Drawing.Size(250, 25)
 $lblRDPHost.ForeColor = $textColor
 $lblRDPHost.Font = $generalFont
-$tabRDP.Controls.Add($lblRDPHost)
+$panelRDP.Controls.Add($lblRDPHost)
 
 $txtRDPHost = New-Object System.Windows.Forms.TextBox
 $txtRDPHost.Location = New-Object System.Drawing.Point(280, 22)
@@ -1376,7 +1439,7 @@ $txtRDPHost.Size = New-Object System.Drawing.Size(400, 25)
 $txtRDPHost.BackColor = $darkGray
 $txtRDPHost.ForeColor = $textColor
 $txtRDPHost.Font = $generalFont
-$tabRDP.Controls.Add($txtRDPHost)
+$panelRDP.Controls.Add($txtRDPHost)
 
 $chkRDPMultimon = New-Object System.Windows.Forms.CheckBox
 $chkRDPMultimon.Text = "🖥 Multi-Monitor (/multimon)"
@@ -1384,7 +1447,7 @@ $chkRDPMultimon.Location = New-Object System.Drawing.Point(20, 65)
 $chkRDPMultimon.Size = New-Object System.Drawing.Size(280, 25)
 $chkRDPMultimon.ForeColor = $textColor
 $chkRDPMultimon.Font = $generalFont
-$tabRDP.Controls.Add($chkRDPMultimon)
+$panelRDP.Controls.Add($chkRDPMultimon)
 
 $chkRDPAdmin = New-Object System.Windows.Forms.CheckBox
 $chkRDPAdmin.Text = "👑 Admin Mode (/admin)"
@@ -1392,16 +1455,16 @@ $chkRDPAdmin.Location = New-Object System.Drawing.Point(20, 100)
 $chkRDPAdmin.Size = New-Object System.Drawing.Size(280, 25)
 $chkRDPAdmin.ForeColor = $textColor
 $chkRDPAdmin.Font = $generalFont
-$tabRDP.Controls.Add($chkRDPAdmin)
+$panelRDP.Controls.Add($chkRDPAdmin)
 
 $chkRDPT2 = New-Object System.Windows.Forms.CheckBox
 $chkRDPT2.Text = "🔐 T2 Feature (/restrictedAdmin)"
 $chkRDPT2.Location = New-Object System.Drawing.Point(20, 135)
 $chkRDPT2.Size = New-Object System.Drawing.Size(400, 25)
 $chkRDPT2.ForeColor = $teal
-$chkRDPT2.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+$chkRDPT2.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
 $chkRDPT2.Checked = $true
-$tabRDP.Controls.Add($chkRDPT2)
+$panelRDP.Controls.Add($chkRDPT2)
 
 $lblRDPT2Note = New-Object System.Windows.Forms.Label
 $lblRDPT2Note.Text = "Note: T2/restrictedAdmin mode prevents credentials from being sent to the remote PC"
@@ -1409,7 +1472,7 @@ $lblRDPT2Note.Location = New-Object System.Drawing.Point(40, 163)
 $lblRDPT2Note.Size = New-Object System.Drawing.Size(700, 25)
 $lblRDPT2Note.ForeColor = $silver
 $lblRDPT2Note.Font = $smallFont
-$tabRDP.Controls.Add($lblRDPT2Note)
+$panelRDP.Controls.Add($lblRDPT2Note)
 
 $btnConnectRDP = New-Object System.Windows.Forms.Button
 $btnConnectRDP.Text = "▶ Connect RDP"
@@ -1420,8 +1483,8 @@ $btnConnectRDP.ForeColor = $teal
 $btnConnectRDP.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnConnectRDP.FlatAppearance.BorderColor = $teal
 $btnConnectRDP.FlatAppearance.BorderSize = 2
-$btnConnectRDP.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
-$tabRDP.Controls.Add($btnConnectRDP)
+$btnConnectRDP.Font = New-Object System.Drawing.Font("Segoe UI", 13, [System.Drawing.FontStyle]::Bold)
+$panelRDP.Controls.Add($btnConnectRDP)
 
 $btnClearRDP = New-Object System.Windows.Forms.Button
 $btnClearRDP.Text = "🗑 Clear"
@@ -1432,18 +1495,18 @@ $btnClearRDP.ForeColor = $silver
 $btnClearRDP.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearRDP.FlatAppearance.BorderColor = $silver
 $btnClearRDP.Font = $generalFont
-$tabRDP.Controls.Add($btnClearRDP)
+$panelRDP.Controls.Add($btnClearRDP)
 
 $txtRDPOutput = New-Object System.Windows.Forms.TextBox
 $txtRDPOutput.Location = New-Object System.Drawing.Point(20, 260)
-$txtRDPOutput.Size = New-Object System.Drawing.Size(1800, 680)
+$txtRDPOutput.Size = New-Object System.Drawing.Size(1550, 680)
 $txtRDPOutput.Multiline = $true
 $txtRDPOutput.ScrollBars = "Vertical"
 $txtRDPOutput.BackColor = $darkGray
 $txtRDPOutput.ForeColor = $textColor
 $txtRDPOutput.Font = $monoFont
 $txtRDPOutput.ReadOnly = $true
-$tabRDP.Controls.Add($txtRDPOutput)
+$panelRDP.Controls.Add($txtRDPOutput)
 
 $btnConnectRDP.Add_Click({
     $target = if ([string]::IsNullOrWhiteSpace($txtRDPHost.Text)) { $script:globalTargetHost } else { $txtRDPHost.Text.Trim() }
@@ -1504,12 +1567,14 @@ $btnClearRDP.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 10: PUTTY SSH - SSH client launcher
+# PANEL 10: PUTTY SSH - SSH client launcher
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabPuTTY = New-Object System.Windows.Forms.TabPage
-$tabPuTTY.Text = "🔧 PuTTY SSH"
-$tabPuTTY.BackColor = $nearBlack
-$tabControl.Controls.Add($tabPuTTY)
+$panelPuTTY = New-Object System.Windows.Forms.Panel
+$panelPuTTY.Location = New-Object System.Drawing.Point(0, 0)
+$panelPuTTY.Size = New-Object System.Drawing.Size(1610, 980)
+$panelPuTTY.BackColor = $nearBlack
+$panelPuTTY.Visible = $false
+$contentPanel.Controls.Add($panelPuTTY)
 
 $lblPuTTYHost = New-Object System.Windows.Forms.Label
 $lblPuTTYHost.Text = "SSH Host:"
@@ -1517,7 +1582,7 @@ $lblPuTTYHost.Location = New-Object System.Drawing.Point(20, 25)
 $lblPuTTYHost.Size = New-Object System.Drawing.Size(100, 25)
 $lblPuTTYHost.ForeColor = $textColor
 $lblPuTTYHost.Font = $generalFont
-$tabPuTTY.Controls.Add($lblPuTTYHost)
+$panelPuTTY.Controls.Add($lblPuTTYHost)
 
 $txtPuTTYHost = New-Object System.Windows.Forms.TextBox
 $txtPuTTYHost.Location = New-Object System.Drawing.Point(130, 22)
@@ -1525,7 +1590,7 @@ $txtPuTTYHost.Size = New-Object System.Drawing.Size(400, 25)
 $txtPuTTYHost.BackColor = $darkGray
 $txtPuTTYHost.ForeColor = $textColor
 $txtPuTTYHost.Font = $generalFont
-$tabPuTTY.Controls.Add($txtPuTTYHost)
+$panelPuTTY.Controls.Add($txtPuTTYHost)
 
 $lblPuTTYPort = New-Object System.Windows.Forms.Label
 $lblPuTTYPort.Text = "Port:"
@@ -1533,7 +1598,7 @@ $lblPuTTYPort.Location = New-Object System.Drawing.Point(550, 25)
 $lblPuTTYPort.Size = New-Object System.Drawing.Size(50, 25)
 $lblPuTTYPort.ForeColor = $textColor
 $lblPuTTYPort.Font = $generalFont
-$tabPuTTY.Controls.Add($lblPuTTYPort)
+$panelPuTTY.Controls.Add($lblPuTTYPort)
 
 $txtPuTTYPort = New-Object System.Windows.Forms.TextBox
 $txtPuTTYPort.Location = New-Object System.Drawing.Point(610, 22)
@@ -1542,7 +1607,7 @@ $txtPuTTYPort.BackColor = $darkGray
 $txtPuTTYPort.ForeColor = $textColor
 $txtPuTTYPort.Font = $generalFont
 $txtPuTTYPort.Text = "22"
-$tabPuTTY.Controls.Add($txtPuTTYPort)
+$panelPuTTY.Controls.Add($txtPuTTYPort)
 
 $lblPuTTYUser = New-Object System.Windows.Forms.Label
 $lblPuTTYUser.Text = "Username:"
@@ -1550,7 +1615,7 @@ $lblPuTTYUser.Location = New-Object System.Drawing.Point(20, 65)
 $lblPuTTYUser.Size = New-Object System.Drawing.Size(100, 25)
 $lblPuTTYUser.ForeColor = $textColor
 $lblPuTTYUser.Font = $generalFont
-$tabPuTTY.Controls.Add($lblPuTTYUser)
+$panelPuTTY.Controls.Add($lblPuTTYUser)
 
 $txtPuTTYUser = New-Object System.Windows.Forms.TextBox
 $txtPuTTYUser.Location = New-Object System.Drawing.Point(130, 62)
@@ -1558,7 +1623,7 @@ $txtPuTTYUser.Size = New-Object System.Drawing.Size(400, 25)
 $txtPuTTYUser.BackColor = $darkGray
 $txtPuTTYUser.ForeColor = $textColor
 $txtPuTTYUser.Font = $generalFont
-$tabPuTTY.Controls.Add($txtPuTTYUser)
+$panelPuTTY.Controls.Add($txtPuTTYUser)
 
 $btnLaunchPuTTY = New-Object System.Windows.Forms.Button
 $btnLaunchPuTTY.Text = "▶ Launch PuTTY"
@@ -1570,7 +1635,7 @@ $btnLaunchPuTTY.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnLaunchPuTTY.FlatAppearance.BorderColor = $teal
 $btnLaunchPuTTY.FlatAppearance.BorderSize = 2
 $btnLaunchPuTTY.Font = $generalFont
-$tabPuTTY.Controls.Add($btnLaunchPuTTY)
+$panelPuTTY.Controls.Add($btnLaunchPuTTY)
 
 $btnDownloadPuTTY = New-Object System.Windows.Forms.Button
 $btnDownloadPuTTY.Text = "⬇ Download PuTTY"
@@ -1581,7 +1646,7 @@ $btnDownloadPuTTY.ForeColor = $silver
 $btnDownloadPuTTY.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnDownloadPuTTY.FlatAppearance.BorderColor = $silver
 $btnDownloadPuTTY.Font = $generalFont
-$tabPuTTY.Controls.Add($btnDownloadPuTTY)
+$panelPuTTY.Controls.Add($btnDownloadPuTTY)
 
 $btnClearPuTTY = New-Object System.Windows.Forms.Button
 $btnClearPuTTY.Text = "🗑 Clear"
@@ -1592,11 +1657,11 @@ $btnClearPuTTY.ForeColor = $silver
 $btnClearPuTTY.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearPuTTY.FlatAppearance.BorderColor = $silver
 $btnClearPuTTY.Font = $generalFont
-$tabPuTTY.Controls.Add($btnClearPuTTY)
+$panelPuTTY.Controls.Add($btnClearPuTTY)
 
 $txtPuTTYOutput = New-Object System.Windows.Forms.TextBox
 $txtPuTTYOutput.Location = New-Object System.Drawing.Point(20, 165)
-$txtPuTTYOutput.Size = New-Object System.Drawing.Size(1800, 775)
+$txtPuTTYOutput.Size = New-Object System.Drawing.Size(1550, 775)
 $txtPuTTYOutput.Multiline = $true
 $txtPuTTYOutput.ScrollBars = "Vertical"
 $txtPuTTYOutput.BackColor = $darkGray
@@ -1611,7 +1676,7 @@ $txtPuTTYOutput.Text = "══════════════════�
                         "  • C:\Program Files\PuTTY\putty.exe`r`n" +
                         "  • C:\Program Files (x86)\PuTTY\putty.exe`r`n" +
                         "  • In system PATH`r`n"
-$tabPuTTY.Controls.Add($txtPuTTYOutput)
+$panelPuTTY.Controls.Add($txtPuTTYOutput)
 
 $btnLaunchPuTTY.Add_Click({
     $host = if ([string]::IsNullOrWhiteSpace($txtPuTTYHost.Text)) { $script:globalTargetHost } else { $txtPuTTYHost.Text.Trim() }
@@ -1691,12 +1756,14 @@ $btnClearPuTTY.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 11: SERVER REBOOT MONITOR - Reboot server with visual ping monitoring
+# PANEL 11: SERVER REBOOT MONITOR - Reboot server with visual ping monitoring
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabReboot = New-Object System.Windows.Forms.TabPage
-$tabReboot.Text = "🔄 Server Reboot"
-$tabReboot.BackColor = $nearBlack
-$tabControl.Controls.Add($tabReboot)
+$panelReboot = New-Object System.Windows.Forms.Panel
+$panelReboot.Location = New-Object System.Drawing.Point(0, 0)
+$panelReboot.Size = New-Object System.Drawing.Size(1610, 980)
+$panelReboot.BackColor = $nearBlack
+$panelReboot.Visible = $false
+$contentPanel.Controls.Add($panelReboot)
 
 $lblRebootTarget = New-Object System.Windows.Forms.Label
 $lblRebootTarget.Text = "Target Server (uses global if empty):"
@@ -1704,7 +1771,7 @@ $lblRebootTarget.Location = New-Object System.Drawing.Point(20, 25)
 $lblRebootTarget.Size = New-Object System.Drawing.Size(250, 25)
 $lblRebootTarget.ForeColor = $textColor
 $lblRebootTarget.Font = $generalFont
-$tabReboot.Controls.Add($lblRebootTarget)
+$panelReboot.Controls.Add($lblRebootTarget)
 
 $txtRebootTarget = New-Object System.Windows.Forms.TextBox
 $txtRebootTarget.Location = New-Object System.Drawing.Point(280, 22)
@@ -1712,7 +1779,7 @@ $txtRebootTarget.Size = New-Object System.Drawing.Size(400, 25)
 $txtRebootTarget.BackColor = $darkGray
 $txtRebootTarget.ForeColor = $textColor
 $txtRebootTarget.Font = $generalFont
-$tabReboot.Controls.Add($txtRebootTarget)
+$panelReboot.Controls.Add($txtRebootTarget)
 
 $lblRebootDelay = New-Object System.Windows.Forms.Label
 $lblRebootDelay.Text = "Delay (seconds):"
@@ -1720,7 +1787,7 @@ $lblRebootDelay.Location = New-Object System.Drawing.Point(700, 25)
 $lblRebootDelay.Size = New-Object System.Drawing.Size(120, 25)
 $lblRebootDelay.ForeColor = $textColor
 $lblRebootDelay.Font = $generalFont
-$tabReboot.Controls.Add($lblRebootDelay)
+$panelReboot.Controls.Add($lblRebootDelay)
 
 $txtRebootDelay = New-Object System.Windows.Forms.TextBox
 $txtRebootDelay.Location = New-Object System.Drawing.Point(830, 22)
@@ -1729,7 +1796,7 @@ $txtRebootDelay.BackColor = $darkGray
 $txtRebootDelay.ForeColor = $textColor
 $txtRebootDelay.Font = $generalFont
 $txtRebootDelay.Text = "30"
-$tabReboot.Controls.Add($txtRebootDelay)
+$panelReboot.Controls.Add($txtRebootDelay)
 
 $btnReboot = New-Object System.Windows.Forms.Button
 $btnReboot.Text = "🔄 Reboot Server"
@@ -1740,8 +1807,8 @@ $btnReboot.ForeColor = $red
 $btnReboot.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnReboot.FlatAppearance.BorderColor = $red
 $btnReboot.FlatAppearance.BorderSize = 2
-$btnReboot.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$tabReboot.Controls.Add($btnReboot)
+$btnReboot.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+$panelReboot.Controls.Add($btnReboot)
 
 $btnPingMonitor = New-Object System.Windows.Forms.Button
 $btnPingMonitor.Text = "📡 Ping Monitor Only"
@@ -1753,7 +1820,7 @@ $btnPingMonitor.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnPingMonitor.FlatAppearance.BorderColor = $teal
 $btnPingMonitor.FlatAppearance.BorderSize = 2
 $btnPingMonitor.Font = $generalFont
-$tabReboot.Controls.Add($btnPingMonitor)
+$panelReboot.Controls.Add($btnPingMonitor)
 
 $btnClearReboot = New-Object System.Windows.Forms.Button
 $btnClearReboot.Text = "🗑 Clear"
@@ -1764,18 +1831,18 @@ $btnClearReboot.ForeColor = $silver
 $btnClearReboot.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearReboot.FlatAppearance.BorderColor = $silver
 $btnClearReboot.Font = $generalFont
-$tabReboot.Controls.Add($btnClearReboot)
+$panelReboot.Controls.Add($btnClearReboot)
 
 $txtRebootOutput = New-Object System.Windows.Forms.TextBox
 $txtRebootOutput.Location = New-Object System.Drawing.Point(20, 120)
-$txtRebootOutput.Size = New-Object System.Drawing.Size(1800, 820)
+$txtRebootOutput.Size = New-Object System.Drawing.Size(1550, 820)
 $txtRebootOutput.Multiline = $true
 $txtRebootOutput.ScrollBars = "Vertical"
 $txtRebootOutput.BackColor = $darkGray
 $txtRebootOutput.ForeColor = $textColor
 $txtRebootOutput.Font = $monoFont
 $txtRebootOutput.ReadOnly = $true
-$tabReboot.Controls.Add($txtRebootOutput)
+$panelReboot.Controls.Add($txtRebootOutput)
 
 $btnReboot.Add_Click({
     $target = if ([string]::IsNullOrWhiteSpace($txtRebootTarget.Text)) { $script:globalTargetHost } else { $txtRebootTarget.Text.Trim() }
@@ -1819,7 +1886,7 @@ $btnReboot.Add_Click({
                 $txtRebootOutput.AppendText("Target: $target`r`n")
                 $txtRebootOutput.AppendText("Delay: $delay seconds`r`n`r`n")
                 
-                Restart-Computer -ComputerName $target -Credential $cred -Force -Timeout $delay -ErrorAction Stop
+                Restart-Computer -ComputerName $target -Credential $cred -Force -Delay $delay -ErrorAction Stop
                 
                 $txtRebootOutput.AppendText("✓ Reboot command sent successfully!`r`n")
                 $txtRebootOutput.AppendText("`r`nStarting ping monitoring...`r`n")
@@ -1889,12 +1956,14 @@ $btnClearReboot.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 12: CERTIFICATE CHECK - IIS and SQL Server certificates via registry
+# PANEL 12: CERTIFICATE CHECK - IIS and SQL Server certificates via registry
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabCertCheck = New-Object System.Windows.Forms.TabPage
-$tabCertCheck.Text = "🔒 Certificates"
-$tabCertCheck.BackColor = $nearBlack
-$tabControl.Controls.Add($tabCertCheck)
+$panelCertCheck = New-Object System.Windows.Forms.Panel
+$panelCertCheck.Location = New-Object System.Drawing.Point(0, 0)
+$panelCertCheck.Size = New-Object System.Drawing.Size(1610, 980)
+$panelCertCheck.BackColor = $nearBlack
+$panelCertCheck.Visible = $false
+$contentPanel.Controls.Add($panelCertCheck)
 
 $btnCheckCerts = New-Object System.Windows.Forms.Button
 $btnCheckCerts.Text = "🔍 Check All Certificates"
@@ -1906,7 +1975,7 @@ $btnCheckCerts.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnCheckCerts.FlatAppearance.BorderColor = $teal
 $btnCheckCerts.FlatAppearance.BorderSize = 2
 $btnCheckCerts.Font = $generalFont
-$tabCertCheck.Controls.Add($btnCheckCerts)
+$panelCertCheck.Controls.Add($btnCheckCerts)
 
 $btnCheckIIS = New-Object System.Windows.Forms.Button
 $btnCheckIIS.Text = "🌐 IIS Certs Only"
@@ -1918,7 +1987,7 @@ $btnCheckIIS.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnCheckIIS.FlatAppearance.BorderColor = $teal
 $btnCheckIIS.FlatAppearance.BorderSize = 2
 $btnCheckIIS.Font = $generalFont
-$tabCertCheck.Controls.Add($btnCheckIIS)
+$panelCertCheck.Controls.Add($btnCheckIIS)
 
 $btnCheckSQL = New-Object System.Windows.Forms.Button
 $btnCheckSQL.Text = "🗄 SQL Certs Only"
@@ -1930,7 +1999,7 @@ $btnCheckSQL.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnCheckSQL.FlatAppearance.BorderColor = $teal
 $btnCheckSQL.FlatAppearance.BorderSize = 2
 $btnCheckSQL.Font = $generalFont
-$tabCertCheck.Controls.Add($btnCheckSQL)
+$panelCertCheck.Controls.Add($btnCheckSQL)
 
 $btnClearCerts = New-Object System.Windows.Forms.Button
 $btnClearCerts.Text = "🗑 Clear"
@@ -1941,18 +2010,18 @@ $btnClearCerts.ForeColor = $silver
 $btnClearCerts.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearCerts.FlatAppearance.BorderColor = $silver
 $btnClearCerts.Font = $generalFont
-$tabCertCheck.Controls.Add($btnClearCerts)
+$panelCertCheck.Controls.Add($btnClearCerts)
 
 $txtCertOutput = New-Object System.Windows.Forms.TextBox
 $txtCertOutput.Location = New-Object System.Drawing.Point(20, 70)
-$txtCertOutput.Size = New-Object System.Drawing.Size(1800, 870)
+$txtCertOutput.Size = New-Object System.Drawing.Size(1550, 870)
 $txtCertOutput.Multiline = $true
 $txtCertOutput.ScrollBars = "Vertical"
 $txtCertOutput.BackColor = $darkGray
 $txtCertOutput.ForeColor = $textColor
 $txtCertOutput.Font = $monoFont
 $txtCertOutput.ReadOnly = $true
-$tabCertCheck.Controls.Add($txtCertOutput)
+$panelCertCheck.Controls.Add($txtCertOutput)
 
 $btnCheckCerts.Add_Click({
     $targetHost = $script:globalTargetHost
@@ -2098,12 +2167,14 @@ $btnClearCerts.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 13: THREATLOCKER CHECK - Check for ThreatLocker blocking events
+# PANEL 13: THREATLOCKER CHECK - Check for ThreatLocker blocking events
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabThreatLocker = New-Object System.Windows.Forms.TabPage
-$tabThreatLocker.Text = "🛡 ThreatLocker"
-$tabThreatLocker.BackColor = $nearBlack
-$tabControl.Controls.Add($tabThreatLocker)
+$panelThreatLocker = New-Object System.Windows.Forms.Panel
+$panelThreatLocker.Location = New-Object System.Drawing.Point(0, 0)
+$panelThreatLocker.Size = New-Object System.Drawing.Size(1610, 980)
+$panelThreatLocker.BackColor = $nearBlack
+$panelThreatLocker.Visible = $false
+$contentPanel.Controls.Add($panelThreatLocker)
 
 $lblTLTarget = New-Object System.Windows.Forms.Label
 $lblTLTarget.Text = "Target Host (uses global if empty):"
@@ -2111,7 +2182,7 @@ $lblTLTarget.Location = New-Object System.Drawing.Point(20, 25)
 $lblTLTarget.Size = New-Object System.Drawing.Size(250, 25)
 $lblTLTarget.ForeColor = $textColor
 $lblTLTarget.Font = $generalFont
-$tabThreatLocker.Controls.Add($lblTLTarget)
+$panelThreatLocker.Controls.Add($lblTLTarget)
 
 $txtTLTarget = New-Object System.Windows.Forms.TextBox
 $txtTLTarget.Location = New-Object System.Drawing.Point(280, 22)
@@ -2119,7 +2190,7 @@ $txtTLTarget.Size = New-Object System.Drawing.Size(400, 25)
 $txtTLTarget.BackColor = $darkGray
 $txtTLTarget.ForeColor = $textColor
 $txtTLTarget.Font = $generalFont
-$tabThreatLocker.Controls.Add($txtTLTarget)
+$panelThreatLocker.Controls.Add($txtTLTarget)
 
 $btnCheckTL = New-Object System.Windows.Forms.Button
 $btnCheckTL.Text = "🔍 Check ThreatLocker"
@@ -2131,7 +2202,7 @@ $btnCheckTL.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnCheckTL.FlatAppearance.BorderColor = $teal
 $btnCheckTL.FlatAppearance.BorderSize = 2
 $btnCheckTL.Font = $generalFont
-$tabThreatLocker.Controls.Add($btnCheckTL)
+$panelThreatLocker.Controls.Add($btnCheckTL)
 
 $btnCheckTLService = New-Object System.Windows.Forms.Button
 $btnCheckTLService.Text = "⚙ Check Service Status"
@@ -2143,7 +2214,7 @@ $btnCheckTLService.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnCheckTLService.FlatAppearance.BorderColor = $teal
 $btnCheckTLService.FlatAppearance.BorderSize = 2
 $btnCheckTLService.Font = $generalFont
-$tabThreatLocker.Controls.Add($btnCheckTLService)
+$panelThreatLocker.Controls.Add($btnCheckTLService)
 
 $btnClearTL = New-Object System.Windows.Forms.Button
 $btnClearTL.Text = "🗑 Clear"
@@ -2154,18 +2225,18 @@ $btnClearTL.ForeColor = $silver
 $btnClearTL.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearTL.FlatAppearance.BorderColor = $silver
 $btnClearTL.Font = $generalFont
-$tabThreatLocker.Controls.Add($btnClearTL)
+$panelThreatLocker.Controls.Add($btnClearTL)
 
 $txtTLOutput = New-Object System.Windows.Forms.TextBox
 $txtTLOutput.Location = New-Object System.Drawing.Point(20, 120)
-$txtTLOutput.Size = New-Object System.Drawing.Size(1800, 820)
+$txtTLOutput.Size = New-Object System.Drawing.Size(1550, 820)
 $txtTLOutput.Multiline = $true
 $txtTLOutput.ScrollBars = "Vertical"
 $txtTLOutput.BackColor = $darkGray
 $txtTLOutput.ForeColor = $textColor
 $txtTLOutput.Font = $monoFont
 $txtTLOutput.ReadOnly = $true
-$tabThreatLocker.Controls.Add($txtTLOutput)
+$panelThreatLocker.Controls.Add($txtTLOutput)
 
 $btnCheckTL.Add_Click({
     $targetHost = if ([string]::IsNullOrWhiteSpace($txtTLTarget.Text)) { $script:globalTargetHost } else { $txtTLTarget.Text.Trim() }
@@ -2259,12 +2330,14 @@ $btnClearTL.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 14: SERVICES MANAGER - Windows Services management
+# PANEL 14: SERVICES MANAGER - Windows Services management
 # ═══════════════════════════════════════════════════════════════════════════════
-$tabServices = New-Object System.Windows.Forms.TabPage
-$tabServices.Text = "⚙ Services"
-$tabServices.BackColor = $nearBlack
-$tabControl.Controls.Add($tabServices)
+$panelServices = New-Object System.Windows.Forms.Panel
+$panelServices.Location = New-Object System.Drawing.Point(0, 0)
+$panelServices.Size = New-Object System.Drawing.Size(1610, 980)
+$panelServices.BackColor = $nearBlack
+$panelServices.Visible = $false
+$contentPanel.Controls.Add($panelServices)
 
 $lblServicesTarget = New-Object System.Windows.Forms.Label
 $lblServicesTarget.Text = "Target Host (uses global if empty):"
@@ -2272,7 +2345,7 @@ $lblServicesTarget.Location = New-Object System.Drawing.Point(20, 25)
 $lblServicesTarget.Size = New-Object System.Drawing.Size(250, 25)
 $lblServicesTarget.ForeColor = $textColor
 $lblServicesTarget.Font = $generalFont
-$tabServices.Controls.Add($lblServicesTarget)
+$panelServices.Controls.Add($lblServicesTarget)
 
 $txtServicesTarget = New-Object System.Windows.Forms.TextBox
 $txtServicesTarget.Location = New-Object System.Drawing.Point(280, 22)
@@ -2280,7 +2353,7 @@ $txtServicesTarget.Size = New-Object System.Drawing.Size(400, 25)
 $txtServicesTarget.BackColor = $darkGray
 $txtServicesTarget.ForeColor = $textColor
 $txtServicesTarget.Font = $generalFont
-$tabServices.Controls.Add($txtServicesTarget)
+$panelServices.Controls.Add($txtServicesTarget)
 
 $btnOpenServices = New-Object System.Windows.Forms.Button
 $btnOpenServices.Text = "🖥 Open services.msc"
@@ -2292,7 +2365,7 @@ $btnOpenServices.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnOpenServices.FlatAppearance.BorderColor = $teal
 $btnOpenServices.FlatAppearance.BorderSize = 2
 $btnOpenServices.Font = $generalFont
-$tabServices.Controls.Add($btnOpenServices)
+$panelServices.Controls.Add($btnOpenServices)
 
 $btnListServices = New-Object System.Windows.Forms.Button
 $btnListServices.Text = "📋 List All Services"
@@ -2304,7 +2377,7 @@ $btnListServices.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnListServices.FlatAppearance.BorderColor = $teal
 $btnListServices.FlatAppearance.BorderSize = 2
 $btnListServices.Font = $generalFont
-$tabServices.Controls.Add($btnListServices)
+$panelServices.Controls.Add($btnListServices)
 
 $btnClearServices = New-Object System.Windows.Forms.Button
 $btnClearServices.Text = "🗑 Clear"
@@ -2315,11 +2388,11 @@ $btnClearServices.ForeColor = $silver
 $btnClearServices.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnClearServices.FlatAppearance.BorderColor = $silver
 $btnClearServices.Font = $generalFont
-$tabServices.Controls.Add($btnClearServices)
+$panelServices.Controls.Add($btnClearServices)
 
 $txtServicesOutput = New-Object System.Windows.Forms.TextBox
 $txtServicesOutput.Location = New-Object System.Drawing.Point(20, 120)
-$txtServicesOutput.Size = New-Object System.Drawing.Size(1800, 820)
+$txtServicesOutput.Size = New-Object System.Drawing.Size(1550, 820)
 $txtServicesOutput.Multiline = $true
 $txtServicesOutput.ScrollBars = "Vertical"
 $txtServicesOutput.BackColor = $darkGray
@@ -2333,7 +2406,7 @@ $txtServicesOutput.Text = "═════════════════�
                           "management console for the target computer.`r`n`r`n" +
                           "For remote computers, it will attempt to connect using stored`r`n" +
                           "T2 credentials if available.`r`n"
-$tabServices.Controls.Add($txtServicesOutput)
+$panelServices.Controls.Add($txtServicesOutput)
 
 $btnOpenServices.Add_Click({
     $targetHost = if ([string]::IsNullOrWhiteSpace($txtServicesTarget.Text)) { $script:globalTargetHost } else { $txtServicesTarget.Text.Trim() }
@@ -2393,6 +2466,46 @@ $btnListServices.Add_Click({
 
 $btnClearServices.Add_Click({
     $txtServicesOutput.Clear()
+})
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# NAVIGATION LOGIC - Show/Hide Panels Based on Selection
+# ═══════════════════════════════════════════════════════════════════════════════
+
+$navListBox.Add_SelectedIndexChanged({
+    # Hide all panels
+    $panelNodeSummary.Visible = $false
+    $panelNodeHealth.Visible = $false
+    $panelPing.Visible = $false
+    $panelNSLookup.Visible = $false
+    $panelTraceroute.Visible = $false
+    $panelDomainUsers.Visible = $false
+    $panelIPConfig.Visible = $false
+    $panelNetStat.Visible = $false
+    $panelRDP.Visible = $false
+    $panelPuTTY.Visible = $false
+    $panelReboot.Visible = $false
+    $panelCertCheck.Visible = $false
+    $panelThreatLocker.Visible = $false
+    $panelServices.Visible = $false
+    
+    # Show selected panel
+    switch ($navListBox.SelectedIndex) {
+        0 { $panelNodeSummary.Visible = $true }
+        1 { $panelNodeHealth.Visible = $true }
+        2 { $panelPing.Visible = $true }
+        3 { $panelNSLookup.Visible = $true }
+        4 { $panelTraceroute.Visible = $true }
+        5 { $panelDomainUsers.Visible = $true }
+        6 { $panelIPConfig.Visible = $true }
+        7 { $panelNetStat.Visible = $true }
+        8 { $panelRDP.Visible = $true }
+        9 { $panelPuTTY.Visible = $true }
+        10 { $panelReboot.Visible = $true }
+        11 { $panelCertCheck.Visible = $true }
+        12 { $panelThreatLocker.Visible = $true }
+        13 { $panelServices.Visible = $true }
+    }
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
