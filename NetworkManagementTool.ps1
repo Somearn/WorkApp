@@ -34,7 +34,7 @@ function Get-T2Credentials {
     $lblInfo.Location = New-Object System.Drawing.Point(20, 10)
     $lblInfo.Size = New-Object System.Drawing.Size(450, 20)
     $lblInfo.ForeColor = [System.Drawing.Color]::FromArgb(0, 178, 255)
-    $lblInfo.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+    $lblInfo.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
     $credForm.Controls.Add($lblInfo)
     
     $lblUser = New-Object System.Windows.Forms.Label
@@ -71,7 +71,7 @@ function Get-T2Credentials {
     $lblNote.Location = New-Object System.Drawing.Point(20, 115)
     $lblNote.Size = New-Object System.Drawing.Size(450, 30)
     $lblNote.ForeColor = [System.Drawing.Color]::FromArgb(192, 192, 192)
-    $lblNote.Font = New-Object System.Drawing.Font("Segoe UI", 8)
+    $lblNote.Font = New-Object System.Drawing.Font("Segoe UI", 10)
     $credForm.Controls.Add($lblNote)
     
     $btnOK = New-Object System.Windows.Forms.Button
@@ -81,7 +81,7 @@ function Get-T2Credentials {
     $btnOK.BackColor = [System.Drawing.Color]::FromArgb(0, 178, 255)
     $btnOK.ForeColor = [System.Drawing.Color]::White
     $btnOK.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-    $btnOK.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+    $btnOK.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
     $btnOK.DialogResult = [System.Windows.Forms.DialogResult]::OK
     $credForm.Controls.Add($btnOK)
     
@@ -92,7 +92,7 @@ function Get-T2Credentials {
     $btnCancel.BackColor = [System.Drawing.Color]::FromArgb(80, 80, 80)
     $btnCancel.ForeColor = [System.Drawing.Color]::White
     $btnCancel.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-    $btnCancel.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+    $btnCancel.Font = New-Object System.Drawing.Font("Segoe UI", 12)
     $btnCancel.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
     $credForm.Controls.Add($btnCancel)
     
@@ -150,10 +150,10 @@ $yellow = [System.Drawing.Color]::FromArgb(255, 193, 7)
 $green = [System.Drawing.Color]::FromArgb(76, 175, 80)
 
 # Fonts
-$generalFont = New-Object System.Drawing.Font("Segoe UI", 10)
-$titleFont = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
-$monoFont = New-Object System.Drawing.Font("Consolas", 10)
-$smallFont = New-Object System.Drawing.Font("Segoe UI", 9)
+$generalFont = New-Object System.Drawing.Font("Segoe UI", 12)
+$titleFont = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
+$monoFont = New-Object System.Drawing.Font("Consolas", 12)
+$smallFont = New-Object System.Drawing.Font("Segoe UI", 11)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # HEADER - GLOBAL TARGET HOST & CREDENTIALS
@@ -183,7 +183,7 @@ $txtGlobalHost.Location = New-Object System.Drawing.Point(760, 13)
 $txtGlobalHost.Size = New-Object System.Drawing.Size(350, 25)
 $txtGlobalHost.BackColor = $darkGray
 $txtGlobalHost.ForeColor = $teal
-$txtGlobalHost.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
+$txtGlobalHost.Font = New-Object System.Drawing.Font("Segoe UI", 13, [System.Drawing.FontStyle]::Bold)
 $txtGlobalHost.Text = "localhost"
 $txtGlobalHost.Add_TextChanged({
     $script:globalTargetHost = $txtGlobalHost.Text
@@ -252,7 +252,7 @@ $navLabel = New-Object System.Windows.Forms.Label
 $navLabel.Text = "TOOLS"
 $navLabel.Location = New-Object System.Drawing.Point(10, 10)
 $navLabel.Size = New-Object System.Drawing.Size(230, 30)
-$navLabel.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+$navLabel.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
 $navLabel.ForeColor = $teal
 $navLabel.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
 $navPanel.Controls.Add($navLabel)
@@ -1462,7 +1462,7 @@ $chkRDPT2.Text = "🔐 T2 Feature (/restrictedAdmin)"
 $chkRDPT2.Location = New-Object System.Drawing.Point(20, 135)
 $chkRDPT2.Size = New-Object System.Drawing.Size(400, 25)
 $chkRDPT2.ForeColor = $teal
-$chkRDPT2.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+$chkRDPT2.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
 $chkRDPT2.Checked = $true
 $panelRDP.Controls.Add($chkRDPT2)
 
@@ -1483,7 +1483,7 @@ $btnConnectRDP.ForeColor = $teal
 $btnConnectRDP.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnConnectRDP.FlatAppearance.BorderColor = $teal
 $btnConnectRDP.FlatAppearance.BorderSize = 2
-$btnConnectRDP.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
+$btnConnectRDP.Font = New-Object System.Drawing.Font("Segoe UI", 13, [System.Drawing.FontStyle]::Bold)
 $panelRDP.Controls.Add($btnConnectRDP)
 
 $btnClearRDP = New-Object System.Windows.Forms.Button
@@ -1807,7 +1807,7 @@ $btnReboot.ForeColor = $red
 $btnReboot.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $btnReboot.FlatAppearance.BorderColor = $red
 $btnReboot.FlatAppearance.BorderSize = 2
-$btnReboot.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+$btnReboot.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
 $panelReboot.Controls.Add($btnReboot)
 
 $btnPingMonitor = New-Object System.Windows.Forms.Button
