@@ -1819,7 +1819,7 @@ $btnReboot.Add_Click({
                 $txtRebootOutput.AppendText("Target: $target`r`n")
                 $txtRebootOutput.AppendText("Delay: $delay seconds`r`n`r`n")
                 
-                Restart-Computer -ComputerName $target -Credential $cred -Force -Timeout $delay -ErrorAction Stop
+                Restart-Computer -ComputerName $target -Credential $cred -Force -Delay $delay -ErrorAction Stop
                 
                 $txtRebootOutput.AppendText("✓ Reboot command sent successfully!`r`n")
                 $txtRebootOutput.AppendText("`r`nStarting ping monitoring...`r`n")
