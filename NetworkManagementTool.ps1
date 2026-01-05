@@ -272,7 +272,7 @@ $navListBox.Items.AddRange(@(
     "🗺 Traceroute",
     "👥 Domain Users",
     "🌐 IPConfig",
-    "📊 NetStat",
+    "📈 NetStat",
     "🖥 RDP",
     "🔧 PuTTY SSH",
     "🔄 Server Reboot",
@@ -494,7 +494,7 @@ $btnClearNodeInfo.Add_Click({
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 2: NODE HEALTH CHECK - Quick health diagnostics
+# PANEL 2: NODE HEALTH CHECK - Quick health diagnostics
 # ═══════════════════════════════════════════════════════════════════════════════
 $panelNodeHealth = New-Object System.Windows.Forms.Panel
 $panelNodeHealth.Location = New-Object System.Drawing.Point(0, 0)
@@ -709,7 +709,7 @@ $btnClearHealth.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 3: PING TEST - Network reachability testing (on-demand only)
+# PANEL 3: PING TEST - Network reachability testing (on-demand only)
 # ═══════════════════════════════════════════════════════════════════════════════
 $panelPing = New-Object System.Windows.Forms.Panel
 $panelPing.Location = New-Object System.Drawing.Point(0, 0)
@@ -853,7 +853,7 @@ $btnClearPing.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 4: NSLOOKUP - DNS resolution tool
+# PANEL 4: NSLOOKUP - DNS resolution tool
 # ═══════════════════════════════════════════════════════════════════════════════
 $panelNSLookup = New-Object System.Windows.Forms.Panel
 $panelNSLookup.Location = New-Object System.Drawing.Point(0, 0)
@@ -958,7 +958,7 @@ $btnClearNS.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 5: TRACEROUTE - Network path tracing
+# PANEL 5: TRACEROUTE - Network path tracing
 # ═══════════════════════════════════════════════════════════════════════════════
 $panelTraceroute = New-Object System.Windows.Forms.Panel
 $panelTraceroute.Location = New-Object System.Drawing.Point(0, 0)
@@ -1055,7 +1055,7 @@ $btnClearTrace.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 6: DOMAIN USERS - List domain or local users
+# PANEL 6: DOMAIN USERS - List domain or local users
 # ═══════════════════════════════════════════════════════════════════════════════
 $panelDomainUsers = New-Object System.Windows.Forms.Panel
 $panelDomainUsers.Location = New-Object System.Drawing.Point(0, 0)
@@ -1193,7 +1193,7 @@ $btnClearUsers.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 7: IPCONFIG - IP configuration and management
+# PANEL 7: IPCONFIG - IP configuration and management
 # ═══════════════════════════════════════════════════════════════════════════════
 $panelIPConfig = New-Object System.Windows.Forms.Panel
 $panelIPConfig.Location = New-Object System.Drawing.Point(0, 0)
@@ -1322,7 +1322,7 @@ $btnClearIPConfig.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 8: NETSTAT - Network statistics and connections
+# PANEL 8: NETSTAT - Network statistics and connections
 # ═══════════════════════════════════════════════════════════════════════════════
 $panelNetStat = New-Object System.Windows.Forms.Panel
 $panelNetStat.Location = New-Object System.Drawing.Point(0, 0)
@@ -1416,7 +1416,7 @@ $btnClearNetStat.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 9: RDP CONNECTION - Remote Desktop with T2 (restrictedAdmin) support
+# PANEL 9: RDP CONNECTION - Remote Desktop with T2 (restrictedAdmin) support
 # ═══════════════════════════════════════════════════════════════════════════════
 $panelRDP = New-Object System.Windows.Forms.Panel
 $panelRDP.Location = New-Object System.Drawing.Point(0, 0)
@@ -1567,7 +1567,7 @@ $btnClearRDP.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 10: PUTTY SSH - SSH client launcher
+# PANEL 10: PUTTY SSH - SSH client launcher
 # ═══════════════════════════════════════════════════════════════════════════════
 $panelPuTTY = New-Object System.Windows.Forms.Panel
 $panelPuTTY.Location = New-Object System.Drawing.Point(0, 0)
@@ -1756,7 +1756,7 @@ $btnClearPuTTY.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 11: SERVER REBOOT MONITOR - Reboot server with visual ping monitoring
+# PANEL 11: SERVER REBOOT MONITOR - Reboot server with visual ping monitoring
 # ═══════════════════════════════════════════════════════════════════════════════
 $panelReboot = New-Object System.Windows.Forms.Panel
 $panelReboot.Location = New-Object System.Drawing.Point(0, 0)
@@ -1956,7 +1956,7 @@ $btnClearReboot.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 12: CERTIFICATE CHECK - IIS and SQL Server certificates via registry
+# PANEL 12: CERTIFICATE CHECK - IIS and SQL Server certificates via registry
 # ═══════════════════════════════════════════════════════════════════════════════
 $panelCertCheck = New-Object System.Windows.Forms.Panel
 $panelCertCheck.Location = New-Object System.Drawing.Point(0, 0)
@@ -2167,7 +2167,7 @@ $btnClearCerts.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 13: THREATLOCKER CHECK - Check for ThreatLocker blocking events
+# PANEL 13: THREATLOCKER CHECK - Check for ThreatLocker blocking events
 # ═══════════════════════════════════════════════════════════════════════════════
 $panelThreatLocker = New-Object System.Windows.Forms.Panel
 $panelThreatLocker.Location = New-Object System.Drawing.Point(0, 0)
@@ -2330,7 +2330,7 @@ $btnClearTL.Add_Click({
 })
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 14: SERVICES MANAGER - Windows Services management
+# PANEL 14: SERVICES MANAGER - Windows Services management
 # ═══════════════════════════════════════════════════════════════════════════════
 $panelServices = New-Object System.Windows.Forms.Panel
 $panelServices.Location = New-Object System.Drawing.Point(0, 0)
