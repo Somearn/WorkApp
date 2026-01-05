@@ -132,7 +132,7 @@ function Write-OutputSafe {
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Network Management Tool - Healthcare IT Operations Console"
-$form.Size = New-Object System.Drawing.Size(1920, 1080)
+$form.ClientSize = New-Object System.Drawing.Size(1920, 1080)
 $form.StartPosition = "CenterScreen"
 $form.BackColor = [System.Drawing.Color]::FromArgb(15, 15, 15)
 $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
